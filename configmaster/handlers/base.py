@@ -90,21 +90,19 @@ class StorageHandler(abc.ABC):
             data: A dictionary containing the full data payload from ConfigMaster.
                   Expected keys are 'instance_version', 'schema_definition', 'config_values'.
                   The handler will use parts of this payload based on the `mode`.
-            mode: A string specifying what content to save:
-                  - 'values': Save only the dictionary found in `data['config_values']`.
-                              The resulting file should contain just the key-value pairs.
-                  - 'full': Save a structure containing version, schema, and values.
-                            The exact structure depends on the handler (e.g., a JSON object
-                            with 'version', 'schema', 'values' keys). Use
-                            `data['instance_version']`, `data['schema_definition']`, and
-                            `data['config_values']`.
+            mode: Specifies what to save. Accepts 'values' or 'full'.
+                  If 'values' (default), saves only the current configuration key-value pairs.
+                  The file structure depends on the handler (e.g., simple JSON dict).
+                  If 'full', saves the instance version, schema definition, and values.
+                  The file structure also depends on the handler but typically includes
+                  distinct sections or keys for version, schema, and values.
 
         Raises:
             HandlerError: If saving, serialization, or file writing fails for reasons
                           specific to the handler or format.
             EncryptionError: If encryption fails (only applicable if initialized with Fernet).
             ValueError: If an unsupported `mode` is provided.
-            
+
         """
         raise NotImplementedError("Subclasses must implement the save method.")
 

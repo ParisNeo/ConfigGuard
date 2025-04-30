@@ -441,17 +441,16 @@ class ConfigMaster(MutableMapping):
 
         Args:
             filepath: Optional path to save to. Overrides the instance's config_path.
-            mode: Specifies what to save:
-                  - 'values': Save only the current configuration values. File structure
-                              depends on the handler (e.g., simple JSON dict).
-                  - 'full': Save the instance version, schema definition, and values.
-                            File structure depends on the handler (e.g., specific JSON structure).
-
+            mode: Specifies what to save. Accepts 'values' or 'full'.
+                  If 'values' (default), saves only the current configuration key-value pairs.
+                  The file structure depends on the handler (e.g., simple JSON dict).
+                  If 'full', saves the instance version, schema definition, and values.
+                  The file structure also depends on the handler but typically includes
+                  distinct sections or keys for version, schema, and values.
         Raises:
             HandlerError: If saving fails (no path, no handler, serialization, encryption).
             EncryptionError: If encryption specifically fails.
             ValueError: If an invalid `mode` is provided.
-
         """
         save_path = Path(filepath) if filepath else self._config_path
         current_handler = self._handler
