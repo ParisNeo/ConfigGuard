@@ -2,14 +2,14 @@
 Usage Guide
 #############
 
-This guide walks through the primary features of ConfigMaster using examples.
+This guide walks through the primary features of ConfigGuard using examples.
 
 Core Concepts Recap
 ===================
 Before diving in, remember these key ideas:
 
 *   **Schema**: A Python dictionary defining your settings (types, defaults, validation, version).
-*   **ConfigMaster Instance**: The main object holding the schema and current values.
+*   **ConfigGuard Instance**: The main object holding the schema and current values.
 *   **Handlers**: Internal components for reading/writing different file formats (e.g., JSON) and handling encryption.
 *   **Save Modes**: ``mode='values'`` (default, saves only values) or ``mode='full'`` (saves version, schema, and values).
 *   **Versioning**: Automatic comparison during ``load()``; handles older versions via migration, raises errors for newer versions.
@@ -25,13 +25,13 @@ Create a Python dictionary. The top level needs ``__version__``. Other keys are 
 
 See the schema definition keys in the main README or API docs for `SettingSchema`.
 
-2. Initializing ConfigMaster
+2. Initializing ConfigGuard
 ============================
 Pass the schema (dict or file path) and optionally the config file path and encryption key.
 
 .. code-block:: python
 
-   from configmaster import ConfigMaster, generate_encryption_key
+   from configguard import ConfigGuard, generate_encryption_key
    from pathlib import Path
 
    # Assume my_app_schema is the dictionary defined above
@@ -40,19 +40,19 @@ Pass the schema (dict or file path) and optionally the config file path and encr
    # Assume enc_key is a valid Fernet key
 
    # Basic initialization (values mode, no encryption)
-   config_basic = ConfigMaster(schema=my_app_schema, config_path=config_file_path)
+   config_basic = ConfigGuard(schema=my_app_schema, config_path=config_file_path)
 
    # With encryption
-   config_encrypted = ConfigMaster(
+   config_encrypted = ConfigGuard(
        schema=my_app_schema,
        config_path="encrypted_settings.bin", # Use appropriate extension
        encryption_key=enc_key
    )
 
    # With autosave (saves values automatically on change)
-   # config_autosave = ConfigMaster(schema=my_app_schema, config_path=config_file_path, autosave=True)
+   # config_autosave = ConfigGuard(schema=my_app_schema, config_path=config_file_path, autosave=True)
 
-ConfigMaster automatically tries to ``load()`` from ``config_path`` if it exists.
+ConfigGuard automatically tries to ``load()`` from ``config_path`` if it exists.
 
 3. Accessing Settings and Schema
 ================================
@@ -119,7 +119,7 @@ Let's simulate loading an older version:
    try:
        print("\\nLoading older config into V1.1.0 instance...")
        # Initialize with CURRENT schema, load OLD file
-       config_migrated = ConfigMaster(schema=my_app_schema, config_path=older_file)
+       config_migrated = ConfigGuard(schema=my_app_schema, config_path=older_file)
 
        print(f"Loaded file version: {config_migrated.loaded_file_version}") # Should be "1.0.0"
        print(f"Instance version: {config_migrated.version}")         # Should be "1.1.0"
@@ -175,4 +175,4 @@ Update settings from a dict (e.g., from a web form). Only affects values, ignore
     except Exception as e:
         print(f"Import failed: {e}")
 
-This covers the main workflows for using ConfigMaster effectively. Check the :doc:`api` reference for detailed class and method information.
+This covers the main workflows for using ConfigGuard effectively. Check the :doc:`api` reference for detailed class and method information.

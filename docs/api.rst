@@ -2,12 +2,12 @@
 API Reference
 ###############
 
-This page provides auto-generated documentation from the ConfigMaster source code docstrings.
+This page provides auto-generated documentation from the ConfigGuard source code docstrings.
 
 Main Class
 ==========
 
-.. autoclass:: configmaster.ConfigMaster
+.. autoclass:: configguard.ConfigGuard
    :members:
    :undoc-members:
    :show-inheritance:
@@ -16,12 +16,12 @@ Main Class
 Schema & Setting Classes
 ========================
 
-.. autoclass:: configmaster.SettingSchema
+.. autoclass:: configguard.SettingSchema
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: configmaster.ConfigSetting
+.. autoclass:: configguard.ConfigSetting
    :members:
    :undoc-members:
    :show-inheritance:
@@ -29,23 +29,23 @@ Schema & Setting Classes
 Exceptions
 ==========
 
-.. automodule:: configmaster.exceptions
+.. automodule:: configguard.exceptions
    :members:
    :undoc-members:
 
 Handlers (Base Class)
 =====================
 
-.. autoclass:: configmaster.handlers.StorageHandler
+.. autoclass:: configguard.handlers.StorageHandler
    :members: load, save, __init__
    :undoc-members:
 
 .. note::
-   Specific handler implementations (like ``JsonHandler``) are typically used internally via the ``get_handler`` factory and the ``ConfigMaster`` class based on file extensions. Their direct use is less common.
+   Specific handler implementations (like ``JsonHandler``) are typically used internally via the ``get_handler`` factory and the ``ConfigGuard`` class based on file extensions. Their direct use is less common.
 
 Utilities
 =========
 
-.. autofunction:: configmaster.generate_encryption_key
+.. autofunction:: configguard.generate_encryption_key
 
-.. autofunction:: configmaster.set_log_level
+.. autofunction:: configguard.set_log_level

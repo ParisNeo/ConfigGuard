@@ -5,7 +5,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "configmaster"
+name = "configguard"
 version = "0.2.0" # Reflects the last significant changes
 description = "A robust, schema-driven configuration management library for Python with encryption, versioning, and multiple backends."
 readme = "README.md"
@@ -93,15 +93,15 @@ dev = [
 ]
 
 # Combine multiple extras easily: pip install .[encryption,dev]
-all = ["configmaster[encryption,yaml,toml]"] # Add more as needed
+all = ["configguard[encryption,yaml,toml]"] # Add more as needed
 
 
 [project.urls]
-Homepage = "https://github.com/ParisNeo/ConfigMaster"
-Repository = "https://github.com/ParisNeo/ConfigMaster.git"
-Documentation = "https://parisneo.github.io/ConfigMaster/" # Update if name changes
-Issues = "https://github.com/ParisNeo/ConfigMaster/issues"
-Changelog = "https://github.com/ParisNeo/ConfigMaster/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/ParisNeo/ConfigGuard"
+Repository = "https://github.com/ParisNeo/ConfigGuard.git"
+Documentation = "https://parisneo.github.io/ConfigGuard/" # Update if name changes
+Issues = "https://github.com/ParisNeo/ConfigGuard/issues"
+Changelog = "https://github.com/ParisNeo/ConfigGuard/blob/main/CHANGELOG.md"
 
 
 # --- Tool Configurations ---
@@ -111,11 +111,11 @@ Changelog = "https://github.com/ParisNeo/ConfigMaster/blob/main/CHANGELOG.md"
 # include-package-data = true
 # Or explicitly list package data here
 [tool.setuptools.package-data]
-configmaster = ["py.typed"] # Mark package as type-hinted (PEP 561)
+configguard = ["py.typed"] # Mark package as type-hinted (PEP 561)
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["configmaster*"]
+include = ["configguard*"]
 # Exclude tests, docs, examples from the built package
 exclude = ["tests*", "docs*", "examples*"]
 
@@ -148,7 +148,7 @@ line-length = 88
 target-version = "py38"
 
 [tool.ruff.isort]
-# known-first-party = ["configmaster"] # Help isort identify your package
+# known-first-party = ["configguard"] # Help isort identify your package
 
 [tool.mypy]
 python_version = "3.8"
@@ -162,7 +162,7 @@ warn_unused_ignores = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q -v --cov=configmaster --cov-report=term-missing --cov-fail-under=80" # Example options: verbose, coverage report, fail below 80%
+addopts = "-ra -q -v --cov=configguard --cov-report=term-missing --cov-fail-under=80" # Example options: verbose, coverage report, fail below 80%
 testpaths = [
     "tests", # Directory where tests are located
 ]

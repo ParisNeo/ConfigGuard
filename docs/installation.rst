@@ -2,11 +2,11 @@
 Installation
 ################
 
-Install ConfigMaster using pip:
+Install ConfigGuard using pip:
 
 .. code-block:: bash
 
-   pip install configmaster
+   pip install configguard
 
 This installs the core library with JSON support.
 
@@ -15,11 +15,11 @@ Optional Features
 
 Encryption
 ----------
-To use the configuration encryption features, you need the ``cryptography`` library. You can install it along with ConfigMaster using the ``[encryption]`` extra:
+To use the configuration encryption features, you need the ``cryptography`` library. You can install it along with ConfigGuard using the ``[encryption]`` extra:
 
 .. code-block:: bash
 
-   pip install configmaster[encryption]
+   pip install configguard[encryption]
 
 Alternatively, install it separately:
 
@@ -34,20 +34,20 @@ Support for other storage backends like YAML, TOML, and SQLite is planned. When 
 .. code-block:: bash
 
    # Example (when implemented)
-   pip install configmaster[yaml]
-   pip install configmaster[toml]
-   pip install configmaster[sqlite]
-   pip install configmaster[all_handlers] # Install all available handlers
+   pip install configguard[yaml]
+   pip install configguard[toml]
+   pip install configguard[sqlite]
+   pip install configguard[all_handlers] # Install all available handlers
 
 Development Installation
 ========================
-If you want to contribute to ConfigMaster or install the latest development version:
+If you want to contribute to ConfigGuard or install the latest development version:
 
 1. Clone the repository:
    .. code-block:: bash
 
-      git clone https://github.com/ParisNeo/ConfigMaster.git
-      cd ConfigMaster
+      git clone https://github.com/ParisNeo/ConfigGuard.git
+      cd ConfigGuard
 
 2. Install in editable mode with development dependencies:
    .. code-block:: bash

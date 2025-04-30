@@ -1,27 +1,27 @@
-# -*- coding: utf-8 -*-
-# Project: ConfigMaster
+# Project: ConfigGuard
 # File: handlers/base.py
 # Author: ParisNeo with Gemini 2.5
 # Date: 30/04/2025
-# Description: Abstract base class definition for ConfigMaster storage handlers.
+# Description: Abstract base class definition for ConfigGuard storage handlers.
 #              Defines the required interface for loading and saving configuration data,
 #              potentially handling encryption.
 
 import abc
-from pathlib import Path
 import typing
+from pathlib import Path
+
 
 # Define the structured dictionary format returned by load
 # This helps ensure type safety and clarity for handler implementers and users.
-LoadResult = typing.TypedDict('LoadResult', {
-    'version': typing.Optional[str],
-    'schema': typing.Optional[dict],
-    'values': dict
-})
+class LoadResult(typing.TypedDict):
+    version: typing.Optional[str]
+    schema: typing.Optional[dict]
+    values: dict
+
 
 class StorageHandler(abc.ABC):
     """
-    Abstract base class for all configuration storage handlers in ConfigMaster.
+    Abstract base class for all configuration storage handlers in ConfigGuard.
 
     Concrete handlers must implement the `load` and `save` methods to interact
     with specific storage formats (e.g., JSON, YAML, TOML, Database). They should
@@ -75,7 +75,7 @@ class StorageHandler(abc.ABC):
         raise NotImplementedError("Subclasses must implement the load method.")
 
     @abc.abstractmethod
-    def save(self, filepath: Path, data: dict, mode: str = 'values') -> None:
+    def save(self, filepath: Path, data: dict, mode: str = "values") -> None:
         """
         Save configuration data to the specified file path.
 
@@ -87,7 +87,7 @@ class StorageHandler(abc.ABC):
         Args:
             filepath: The absolute or relative Path object pointing to the target file.
                       The handler should ensure parent directories exist.
-            data: A dictionary containing the full data payload from ConfigMaster.
+            data: A dictionary containing the full data payload from ConfigGuard.
                   Expected keys are 'instance_version', 'schema_definition', 'config_values'.
                   The handler will use parts of this payload based on the `mode`.
             mode: Specifies what to save. Accepts 'values' or 'full'.
@@ -124,8 +124,13 @@ class StorageHandler(abc.ABC):
         """
         if not self._fernet:
             # This should ideally not be reached if save logic is correct
-            raise RuntimeError("Attempted to call _encrypt without a valid Fernet instance.")
-        from ..exceptions import EncryptionError # Keep import local to avoid circularity at top level
+            raise RuntimeError(
+                "Attempted to call _encrypt without a valid Fernet instance."
+            )
+        from ..exceptions import (
+            EncryptionError,
+        )  # Keep import local to avoid circularity at top level
+
         try:
             # We assume self._fernet is a valid Fernet instance if not None
             return self._fernet.encrypt(data_bytes)
@@ -150,8 +155,11 @@ class StorageHandler(abc.ABC):
         """
         if not self._fernet:
             # This should ideally not be reached if load logic is correct
-            raise RuntimeError("Attempted to call _decrypt without a valid Fernet instance.")
-        from ..exceptions import EncryptionError # Keep import local
+            raise RuntimeError(
+                "Attempted to call _decrypt without a valid Fernet instance."
+            )
+        from ..exceptions import EncryptionError  # Keep import local
+
         try:
             # We assume self._fernet is a valid Fernet instance if not None
             return self._fernet.decrypt(encrypted_bytes)
