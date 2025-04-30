@@ -4,29 +4,37 @@
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/configmaster.svg)](https://pypi.org/project/configmaster/)
 [![PyPI license](https://img.shields.io/pypi/l/configmaster.svg)](https://github.com/ParisNeo/ConfigMaster/blob/main/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/configmaster)](https://pepy.tech/project/configmaster)
+[![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://parisneo.github.io/ConfigMaster/)
 <!-- [![Build Status](https://github.com/ParisNeo/ConfigMaster/actions/workflows/ci.yml/badge.svg)](https://github.com/ParisNeo/ConfigMaster/actions/workflows/ci.yml) Placeholder -->
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-<!-- [![Documentation Status](https://parisneo.github.io/ConfigMaster/badge/?version=latest)](https://parisneo.github.io/ConfigMaster/) Placeholder -->
 
 ---
 
-**Tired of fragile, untyped, and insecure configuration files in your Python projects?**
+**Stop fighting inconsistent, error-prone, and insecure configuration files!** 🚀
 
-**ConfigMaster** is here to revolutionize how you manage application settings. Move beyond basic dictionaries and `.ini` files to a robust, schema-driven system that offers **type safety, validation, encryption, versioning, multiple storage backends, and effortless migration.**
+**ConfigMaster** elevates your Python configuration management from fragile text files and basic dictionaries to a powerful, **schema-driven fortress**. Gain unparalleled control with:
 
-Built for developers who demand reliability and flexibility, ConfigMaster ensures your configurations are always valid, secure, and easy to manage, saving you debugging time and preventing runtime errors.
+*   Strict **Type Safety** & **Validation Rules**
+*   Built-in **Encryption** for your secrets
+*   Seamless **Versioning** & **Migration**
+*   Support for **Multiple Storage Formats** (JSON now, more coming!)
+*   Intuitive **Nested Configuration** handling
 
-**Level up your configuration game. Gain control, ensure safety, and embrace flexibility.**
+**Why settle?** Ensure your app settings are always valid, secure, and effortlessly maintainable. Prevent runtime surprises, simplify updates, and focus on building great features, not debugging config errors.
+
+**Adopt ConfigMaster and configure with confidence!**
 
 ---
 
 ## ✨ Key Features
 
-*   📝 **Schema-Driven:** Define your configuration structure with types (`str`, `int`, `float`, `bool`, `list`), defaults, help text, and validation rules (`min_val`, `max_val`, `options`, `nullable`). Includes schema versioning!
-*   🔒 **Built-in Encryption:** Secure sensitive configuration values transparently using Fernet encryption (requires `cryptography`).
-*   💾 **Multiple Backends:** Store configurations in various formats (JSON included, YAML/TOML/SQLite planned) through an extensible handler system. Handlers manage format specifics and encryption.
-*   🔄 **Versioning & Migration:** Embed versions in your schema. ConfigMaster automatically handles loading older configuration versions, applying compatible values and using defaults for new settings. Protects against loading newer-than-expected configs.
-*   ⚙️ **Flexible Save Modes:** Choose to save only the configuration *values* (default) or the *full state* including version, schema, and values – perfect for standalone configuration tools or backups.
+*   📝 **Schema-Driven:** Define your configuration structure with types, defaults, help text, and validation rules (`min_val`, `max_val`, `options`, `nullable`). Includes schema versioning!
+*   🔒 **Built-in Encryption:** Secure sensitive configuration values transparently using Fernet encryption (requires `cryptography`). Handled automatically by storage backends.
+*   💾 **Multiple Backends:** Store configurations in various formats (JSON included, YAML/TOML/SQLite planned) through an extensible handler system.
+*   🔄 **Versioning & Migration:** Embed versions in your schema. ConfigMaster automatically handles loading older configuration versions and migrating settings gracefully.
+*   <0xF0><0x9F><0x97><0x84>️ **Flexible Save Modes:** Choose to save only the configuration *values* (default) or the *full state* including version, schema, and values.
+*   <0xF0><0x9F><0xA7><0xB1> **Supported Types:** Define settings as `str`, `int`, `float`, `bool`, or `list`. *(Note: List element types are not currently validated by the schema)*.
+*   <0xF0><0x9F><0x94><0x8E> **Nested Configuration:** Manage complex settings using dot notation naming conventions (e.g., `database.host`, `database.port`). *(True nested schema validation planned)*.
 *   🐍 **Intuitive Access:** Access configuration values naturally using attribute (`config.my_setting`) or dictionary (`config['my_setting']`) syntax. Access schema details easily (`config.sc_my_setting`).
 *   ✔️ **Automatic Validation:** Values are automatically validated against the schema upon setting or loading, preventing invalid states.
 *   📤 **Easy Export/Import:** Export the current schema and values (`export_schema_with_values()`) for UIs or APIs. Import values from dictionaries (`import_config()`).
@@ -36,12 +44,12 @@ Built for developers who demand reliability and flexibility, ConfigMaster ensure
 
 ## 🤔 Why Choose ConfigMaster?
 
-*   **Reduce Runtime Errors:** Catch configuration mistakes early with schema validation, not when your application crashes.
-*   **Improve Maintainability:** Self-documenting schemas (`help` text) make configurations easier to understand and manage.
-*   **Enhance Security:** Protect API keys, database credentials, and other secrets with built-in, easy-to-use encryption.
-*   **Simplify Updates:** Effortlessly handle configuration changes between application versions with automatic migration logic.
-*   **Boost Developer Experience:** Focus on your application logic, not boilerplate configuration parsing and validation code.
-*   **Adaptable Storage:** Choose the storage format that best suits your needs, without changing your application code.
+*   **Eliminate Config Errors:** Catch issues at definition or load time, not during critical runtime operations.
+*   **Secure Your Secrets:** Easily encrypt API keys, passwords, and tokens without complex setup.
+*   **Future-Proof Your App:** Handle config changes between versions smoothly with built-in migration.
+*   **Improve Code Clarity:** Self-documenting schemas make settings understandable and maintainable.
+*   **Increase Productivity:** Stop writing boilerplate config parsing/validation code.
+*   **Storage Freedom:** Use JSON today, YAML/TOML/DB tomorrow, without rewriting your core logic.
 
 ---
 
@@ -51,13 +59,14 @@ Built for developers who demand reliability and flexibility, ConfigMaster ensure
 pip install configmaster
 ```
 
-For encryption features, you also need `cryptography`:
+For **encryption** features:
 
 ```bash
 pip install configmaster[encryption]
-# or
-pip install cryptography
+# or separately: pip install cryptography
 ```
+
+*(Support for other backends like YAML/TOML will require optional installs in the future).*
 
 ---
 
@@ -66,102 +75,95 @@ pip install cryptography
 ```python
 from configmaster import ConfigMaster, ValidationError, generate_encryption_key
 from pathlib import Path
+import typing # Required for type hinting the schema dict
 
-# 1. Define your schema (including a version!)
+# 1. Define your schema (with version!)
 CONFIG_VERSION = "1.0.0"
-my_schema = {
+my_schema: typing.Dict[str, typing.Any] = { # Add type hint for clarity
     "__version__": CONFIG_VERSION,
-    "database_uri": {
+    "database.uri": { # Use dot notation for logical nesting
         "type": "str",
-        "nullable": True, # Allow None
-        "default": None,
+        "nullable": True,
+        "default": "sqlite:///default.db",
         "help": "Database connection string."
     },
-    "port": {
+    "server.port": {
         "type": "int",
         "default": 8080,
         "min_val": 1024,
-        "help": "Network port to listen on."
+        "help": "Network port."
     },
-    "log_level": {
-        "type": "str",
-        "default": "INFO",
-        "options": ["DEBUG", "INFO", "WARNING", "ERROR"],
-        "help": "Logging level."
-    },
-    "api_key": { # Sensitive data
+    "security.api_key": { # Sensitive data
         "type": "str",
         "nullable": True,
         "default": None,
-        "help": "API Key for external service."
+        "help": "API Key (leave null if unused)."
     }
 }
 
 # 2. Setup paths and optional encryption key
-config_file = Path("app_settings.json")
-# secret_key = generate_encryption_key() # Generate once and store securely
-# print(f"Generated Key: {secret_key.decode()}")
-# Example key (DO NOT use this in production)
-secret_key = b'qXJDWAdLgXpPTN8DRk8nL9zptC0qd-ed352hGjFfaH4='
+config_file = Path("app_settings.bin") # Use .bin for encrypted
+# key = generate_encryption_key() # Generate once and store securely!
+# print(f"Generated Key: {key.decode()}")
+# Example key (DO NOT use this in production, generate your own!)
+key = b'p4SDfnaAZFq9N5EhrNDfGVOQ1C6pShR1w7TKVmqw0rI='
 
-# 3. Initialize ConfigMaster
-# config = ConfigMaster(schema=my_schema, config_path=config_file) # Without encryption
-config = ConfigMaster(
-    schema=my_schema,
-    config_path=config_file,
-    encryption_key=secret_key # Enable encryption
-)
+# 3. Initialize ConfigMaster (with encryption)
+try:
+    config = ConfigMaster(
+        schema=my_schema,
+        config_path=config_file,
+        encryption_key=key
+    )
+except ImportError:
+    print("Encryption requires 'cryptography'. Install with: pip install configmaster[encryption]")
+    # Initialize without encryption as a fallback for the example
+    config = ConfigMaster(schema=my_schema, config_path=Path("app_settings.json"))
 
-# 4. Access values (defaults initially, loaded from file if exists)
-print(f"Port: {config.port}")
-print(f"Log Level: {config['log_level']}") # Dict access works too
 
-# 5. Access schema details
-print(f"Help for port: {config.sc_port.help}")
-print(f"Is API Key nullable? {config.sc_api_key.nullable}")
+# 4. Access values (dot notation works for simple names, dict for complex)
+# Use dictionary access for names containing dots
+print(f"Database: {config['database.uri']}")
+print(f"Port: {config['server.port']}")
+
+# 5. Access schema details (use dict access for dotted names)
+print(f"Port Help: {config['sc_server.port'].help}")
+print(f"Is API Key nullable? {config['sc_security.api_key'].nullable}")
 
 # 6. Modify values (validation happens automatically)
 try:
-    config.port = 9000
-    config.log_level = "DEBUG"
-    config.api_key = "very_secret_key_123"
-    # config.port = 80 # This would raise ValidationError
+    config['server.port'] = 9000
+    config['security.api_key'] = "my-super-secret"
+    # config['server.port'] = 80 # This would raise ValidationError
 except ValidationError as e:
     print(f"Error setting value: {e}")
 
-print(f"New Port: {config.port}")
-print(f"API Key set: {'Yes' if config.api_key else 'No'}")
+print(f"New Port: {config['server.port']}")
+print(f"API Key set: {'Yes' if config['security.api_key'] else 'No'}")
 
-# 7. Save the configuration
-# Save only the current values (encrypted if key was provided)
+# 7. Save configuration values (encrypted if key was provided)
+# Use mode='values' for typical runtime saving
 config.save(mode='values')
-print(f"Configuration values saved to {config_file}")
+print(f"Settings saved to {config.config_path}") # Access internal attr for demo
 
-# Or save the full state (version, schema, values)
-# config.save(mode='full', filepath="app_settings_full_state.json")
-# print("Full configuration state saved.")
-
-# Config is automatically loaded on next initialization if file exists
-# config_reloaded = ConfigMaster(schema=my_schema, config_path=config_file, encryption_key=secret_key)
-# print(f"Reloaded Port: {config_reloaded.port}")
+# Load on next init is automatic! If the file exists, ConfigMaster loads it.
+# Example:
+# config_reloaded = ConfigMaster(schema=my_schema, config_path=config_file, encryption_key=key)
+# print(f"Reloaded Port: {config_reloaded['server.port']}") # Output: 9000
 ```
 
 ---
 
 ## 📚 Core Concepts
 
-*   **Schema (`__version__`, Settings Definitions):** The heart of ConfigMaster. A Python dictionary defining the structure, types, defaults, validation rules (`nullable`, `options`, `min_val`, `max_val`), and help text for each configuration setting. It **must** include a top-level `__version__` key (e.g., `"1.0.0"`) for version tracking.
-*   **ConfigMaster Object:** The main object you interact with. It holds the schema, the current configuration values, and provides methods for loading, saving, validation, and access. Access values like attributes (`config.setting`) or dictionary items (`config['setting']`). Access schema details using the `sc_` prefix (`config.sc_setting` or `config['sc_setting']`).
-*   **Storage Handlers:** Internal components responsible for reading/writing configuration data to specific formats (JSON, YAML, etc.) and handling encryption/decryption transparently if an `encryption_key` is provided to `ConfigMaster`. You don't usually interact with handlers directly; `ConfigMaster` selects the correct one based on the `config_path` file extension.
+*   **Schema (`__version__`, Settings Definitions):** The blueprint for your configuration. A Python dictionary defining the version, settings names (use dot notation like `database.host` for logical grouping), types (`str`, `int`, `float`, `bool`, `list`), defaults, validation rules (`nullable`, `options`, `min_val`, `max_val`), and help text. The `__version__` key is mandatory for version control.
+*   **ConfigMaster Object:** Your main interface. Holds the schema and current values. Access settings via dictionary syntax (`config['database.host']`) especially when using dot notation in names, or attribute syntax (`config.simple_setting`) for names without dots. Access schema via `config['sc_database.host']` or `config.sc_simple_setting`.
+*   **Storage Handlers:** The engine parts handling specific file formats (JSON, future YAML/TOML/DB) and transparent encryption/decryption based on the key you provide to `ConfigMaster`. Chosen based on file extension (e.g., `.json`, `.bin`, `.enc` often map to `JsonHandler`).
 *   **Save Modes (`values` vs `full`):**
-    *   `config.save(mode='values')`: Saves *only* the current key-value pairs. This is the typical mode for runtime configuration. The file structure depends on the handler (e.g., a simple JSON dict).
-    *   `config.save(mode='full')`: Saves the instance version, the schema definition, *and* the current values. Useful for backups, transferring state, or feeding configuration UIs. The file structure includes specific keys like `version`, `schema`, `values`.
-*   **Versioning & Migration:** When `ConfigMaster` loads a configuration file (especially one saved in `full` mode), it compares the version in the file (`loaded_file_version`) with the version defined in the schema it was initialized with (`config.version`).
-    *   **File Newer:** Raises `SchemaError` (prevents loading incompatible future configs).
-    *   **File Older:** Loads values for settings that still exist in the *current* schema, logs warnings for removed settings, and uses *current* defaults for new settings. Basic type coercion (e.g., int <-> float <-> numeric string) is attempted if types differ between loaded schema and instance schema.
-    *   **Versions Match:** Loads values. Issues a warning if the schema definition in the file differs from the instance's schema, but proceeds using the instance's schema for validation.
-    *   **No Version in File:** Assumes a `values-only` file or legacy format; loads values directly against the current schema.
-*   **Encryption:** When an `encryption_key` is provided during `ConfigMaster` initialization, the selected storage handler automatically encrypts data *before* writing to the file and decrypts it *after* reading. The file content itself will be unreadable ciphertext. Uses Fernet symmetric encryption (requires `cryptography`).
+    *   `config.save(mode='values')`: Saves *only* current `{setting_name: value}` pairs. Ideal for runtime. The structure is handler-dependent (e.g., simple JSON dict).
+    *   `config.save(mode='full')`: Saves everything: instance version, the schema definition itself, and current values. Best for backups, transfers, or feeding external tools/UIs. The structure is handler-dependent but contains distinct version/schema/values information.
+*   **Versioning & Migration:** When loading (especially `full` files), `ConfigMaster` compares versions. It prevents loading newer files, and smartly merges older files into the current schema (loading existing values, using new defaults, skipping removed settings). Type coercion between compatible types (int/float/str) is attempted if types differ.
+*   **Encryption:** Provide an `encryption_key` (a Fernet key) during initialization. The storage handler encrypts data before saving and decrypts after loading. Your code interacts with plain values; the file on disk is secured (requires `cryptography`).
 
 ---
 
@@ -169,190 +171,180 @@ print(f"Configuration values saved to {config_file}")
 
 ### 1. Defining the Schema
 
-The schema is a Python dictionary. The top level must contain a `__version__` key. Other keys are the names of your configuration settings.
+Create a Python dictionary. The top level needs `__version__`. Other keys are your settings. Use dot notation (`.` ) in setting names for logical grouping.
 
 ```python
 # Example Schema Dictionary
+import typing
+
 CONFIG_VERSION = "2.1.0"
 
-my_app_schema = {
+my_app_schema: typing.Dict[str, typing.Any] = {
     "__version__": CONFIG_VERSION,
 
-    "service_name": {
+    "service.name": {
         "type": "str",
         "default": "DefaultApp",
         "help": "Identifier for the service."
     },
-    "listen_port": {
+    "server.listen_port": {
         "type": "int",
         "default": 9090,
         "min_val": 1024,
         "max_val": 65535,
         "help": "Port number for incoming connections."
     },
-    "log_level": {
+    "logging.level": {
         "type": "str",
         "default": "INFO",
         "options": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         "help": "Logging verbosity level."
     },
-    "use_tls": {
+    "security.use_tls": {
         "type": "bool",
         "default": False,
         "help": "Enable TLS/SSL encryption."
     },
-    "retry_delay": {
+    "network.retry_delay": {
         "type": "float",
         "default": 0.5,
         "min_val": 0.0,
         "help": "Delay between retry attempts in seconds."
     },
-    "allowed_origins": {
+    "web.allowed_origins": {
         "type": "list",
         "default": [], # Default to an empty list
         "help": "List of allowed CORS origins (strings)."
     },
-    "db_connection_uri": {
+    "database.connection_uri": {
         "type": "str",
         "default": None, # Explicitly no default connection
         "nullable": True, # Allow the setting to be None
         "help": "Database connection string (set to null if not used)."
+    },
+    "credentials.api_secret": { # Sensitive data
+        "type": "str",
+        "default": None,
+        "nullable": True,
+        "help": "Secret API key for external service."
     }
-    # Add other settings as needed...
 }
 ```
 
 **Schema Definition Keys:**
 
-*   `__version__` (str, **Required**): The semantic version (e.g., "1.0.0") of this schema definition. Used for migration.
-*   `type` (str, **Required**): The expected data type. Supported: `"str"`, `"int"`, `"float"`, `"bool"`, `"list"`.
-*   `default` (any, **Required unless `nullable` is True and no default is desired**): The default value used if not set or loaded. Must be valid according to `type` and other constraints. If `nullable` is True, you can omit `default` to default to `None`.
-*   `help` (str, **Required**): A description of the setting, used for documentation and potentially UIs.
-*   `nullable` (bool, Optional): If `True`, allows the setting's value to be `None`. Defaults to `False`.
-*   `options` (list, Optional): A list of allowed values for this setting. Validation ensures the value is one of these options.
-*   `min_val` (int/float, Optional): The minimum allowed numeric value (for `int` or `float` types).
-*   `max_val` (int/float, Optional): The maximum allowed numeric value (for `int` or `float` types).
+*   `__version__` (str, **Required**): Semantic version (e.g., "1.0.0").
+*   `type` (str, **Required**): `"str"`, `"int"`, `"float"`, `"bool"`, `"list"`.
+*   `default` (any, **Required unless `nullable=True`**): Default value. Must match `type` and constraints. Omit if `nullable=True` to default to `None`.
+*   `help` (str, **Required**): Description for docs/UIs.
+*   `nullable` (bool, Optional): `True` allows `None` value. Default: `False`.
+*   `options` (list, Optional): List of allowed values.
+*   `min_val` (int/float, Optional): Minimum numeric value.
+*   `max_val` (int/float, Optional): Maximum numeric value.
 
 ### 2. Initializing ConfigMaster
+
+Pass the schema (dict or file path) and optionally the config file path and encryption key.
 
 ```python
 from configmaster import ConfigMaster, generate_encryption_key
 from pathlib import Path
 
-# Schema can be a dictionary...
-schema_dict = {"__version__": "1.0", "port": {"type": "int", "default": 80}}
-# ...or a path to a JSON file containing the schema definition
-schema_file = Path("path/to/my_schema.json")
-
-# Config file path
+# Assume my_app_schema is the dictionary defined above
+schema_file = Path("path/to/my_schema.json") # Can load schema from JSON file
 cfg_path = Path("my_settings.json") # or .bin, .enc for encrypted
-
-# --- Examples ---
+# Assume enc_key is a valid Fernet key obtained via generate_encryption_key()
 
 # Basic: Load schema dict, save/load values to cfg_path
-# config1 = ConfigMaster(schema=schema_dict, config_path=cfg_path)
+# config1 = ConfigMaster(schema=my_app_schema, config_path=cfg_path)
 
 # Load schema from file, save/load values
 # config2 = ConfigMaster(schema=schema_file, config_path=cfg_path)
 
-# With encryption
-# key = generate_encryption_key() # Store this key securely!
-# config3 = ConfigMaster(schema=schema_dict, config_path=cfg_path, encryption_key=key)
+# With encryption (key must be bytes)
+# config3 = ConfigMaster(schema=my_app_schema, config_path="cfg.bin", encryption_key=enc_key)
 
-# With autosave (saves values only on change)
-# config4 = ConfigMaster(schema=schema_dict, config_path=cfg_path, autosave=True)
+# With autosave (saves values only on change via setattr/setitem)
+# config4 = ConfigMaster(schema=my_app_schema, config_path=cfg_path, autosave=True)
 
-# No config file path (in-memory config, useful for testing or defaults)
-# config5 = ConfigMaster(schema=schema_dict)
-# config5.port = 1234 # Changes exist only in memory unless explicitly saved later
-
-# --- Full Example ---
-try:
-    # Generate key only once for the example run
-    key_path = Path("example.key")
-    if key_path.exists():
-        enc_key = key_path.read_bytes()
-    else:
-        enc_key = generate_encryption_key()
-        key_path.write_bytes(enc_key)
-
-    config = ConfigMaster(
-        schema=my_app_schema, # Use the detailed schema from above
-        config_path=Path("app_runtime_config.json"),
-        encryption_key=enc_key,
-        autosave=False
-    )
-    print(f"ConfigMaster initialized with version: {config.version}")
-
-except Exception as e:
-    print(f"Error during initialization: {e}")
-finally:
-    if key_path.exists(): key_path.unlink() # Clean up key file
-
+# No config file path (in-memory config)
+# config5 = ConfigMaster(schema=my_app_schema)
+# config5['server.listen_port'] = 1234 # Exists only in memory until save() called
 ```
 
-ConfigMaster automatically attempts to `load()` configuration from `config_path` during initialization if the path and a suitable handler exist.
+ConfigMaster automatically tries to `load()` from `config_path` during initialization.
 
-### 3. Accessing Values & Schema
+### 3. Accessing Settings and Schema
+
+Use attribute syntax for simple names, dictionary syntax for names with dots (`.`). Use the `sc_` prefix for schema details.
 
 ```python
-# Assuming 'config' is an initialized ConfigMaster instance
+# Assume 'config' is an initialized ConfigMaster instance with my_app_schema
 
 # --- Accessing Values ---
-current_port = config.listen_port
-current_log_level = config['log_level'] # Dict access
+service_name = config.service_name # Attribute access for simple name
+listen_port = config['server.listen_port'] # Dict access required for dotted name
 
-print(f"Port: {current_port}, Level: {current_log_level}")
-
-# --- Modifying Values (Triggers Validation) ---
-config.listen_port = 8443
-config['log_level'] = 'DEBUG'
-config.allowed_origins.append("https://example.com") # Modify list directly
-
-# Invalid modification will raise ValidationError
-try:
-    config.retry_delay = -1.0
-except ValidationError as e:
-    print(f"Validation Error: {e}")
-    print(f"Retry delay remains: {config.retry_delay}") # Value is unchanged
+print(f"Service: {service_name}, Port: {listen_port}")
 
 # --- Accessing Schema ---
-port_schema = config.sc_listen_port
-log_level_schema = config['sc_log_level']
+port_schema = config['sc_server.listen_port'] # Dict access for schema of dotted name
+service_schema = config.sc_service_name       # Attribute access for schema of simple name
 
-print(f"Help for port: {port_schema.help}")
-print(f"Allowed log levels: {log_level_schema.options}")
-print(f"Is db_connection_uri nullable? {config.sc_db_connection_uri.nullable}")
-print(f"Default retry delay: {config.sc_retry_delay.default_value}")
+print(f"Port Help: {port_schema.help}")
+print(f"Default Service Name: {service_schema.default_value}")
 ```
 
-### 4. Saving & Loading
+### 4. Modifying Settings
 
-Loading typically happens automatically during initialization if `config_path` points to an existing, valid file. You can manually trigger a reload using `config.load()`.
-
-Saving requires specifying the `mode`:
+Assign values directly. Validation occurs automatically. Use dictionary syntax for names with dots.
 
 ```python
+# Assume 'config' is an initialized ConfigMaster instance
+
+config['server.listen_port'] = 8443
+config['logging.level'] = 'WARNING'
+config['web.allowed_origins'].append("https://myfrontend.com") # Modifying lists works directly
+
+try:
+    config['network.retry_delay'] = -1.0 # Invalid: below min_val
+except ValidationError as e:
+    print(f"Validation failed as expected: {e}")
+    # Value remains unchanged from default or previous valid value
+    print(f"Retry delay remains: {config['network.retry_delay']}")
+```
+
+### 5. Saving & Loading
+
+Loading usually happens automatically during initialization. You can manually trigger a reload using `config.load()`. Saving requires specifying the `mode`.
+
+```python
+# Assume 'config' is an initialized ConfigMaster instance
+
 # --- Saving ---
 
 # Save ONLY the current values (common use case)
 # Uses the path provided in __init__ if filepath not specified
 # Encrypted automatically if key was provided
-# config.save(mode='values')
+config.save(mode='values')
+print(f"Values saved to {config.config_path}") # Access internal attr for demo
+
+# Save values to a different file
 # config.save(filepath="other_values.json", mode='values')
 
 # Save the FULL state (version, schema definition, values)
-# Useful for backups, transferring state, or config UIs
-# config.save(mode='full')
-# config.save(filepath="backup_state_v{config.version}.json", mode='full')
+backup_path = Path(f"config_backup_v{config.version}.json")
+config.save(filepath=backup_path, mode='full')
+print(f"Full state saved to {backup_path}")
 
 
 # --- Loading (Manual Trigger) ---
-# Usually not needed as it happens on init, but useful for re-loading
+# Useful for reloading after external changes or testing
 
 try:
-    # config.load() # Reloads from the path specified in __init__
-    # config.load(filepath="specific_config_to_load.json")
+    print("Attempting manual reload...")
+    config.load() # Reloads from the path specified in __init__
+    # config.load(filepath="specific_config_to_load.json") # Load specific file
     print("Configuration reloaded successfully.")
 except FileNotFoundError:
     print("Config file not found for manual load.")
@@ -361,35 +353,58 @@ except Exception as e:
 
 ```
 
-### 5. Versioning & Migration
+### 6. Versioning & Migration
 
-Versioning is handled automatically during `load()` based on the `__version__` key in your schema and the `version` field potentially stored in the configuration file (if saved with `mode='full'`).
+Versioning is handled automatically during `load()` based on the `__version__` key in your schema and the `version` field potentially stored in the configuration file (if saved with `mode='full'`). See Core Concepts for details.
 
-*   **Define Version:** Always include `"__version__": "X.Y.Z"` in your schema dictionary.
-*   **Loading:**
-    *   If loading a `full` file: Versions are compared. Older files trigger migration (see Core Concepts). Newer files raise `SchemaError`.
-    *   If loading a `values` file (no version info): Values are applied directly to the current instance schema.
-*   **Migration Logic:** When an older `full` file is loaded:
-    1.  Values for settings existing in both old and new schemas are loaded (with potential type coercion warnings).
-    2.  Settings present in the old file but *not* in the new schema are logged and skipped.
-    3.  Settings present in the new schema but *not* in the old file retain their *new* default values.
-    4.  Validation always occurs against the *new* (instance's) schema. If a migrated value fails validation against the new schema, it's reset to the new default.
+**Example Simulation:** Loading a V1.0.0 file into a V1.1.0 instance.
 
-You generally don't need to write migration code yourself for simple cases; just update the schema dictionary for new application versions.
+```python
+# Assume current ConfigMaster instance 'config_v110' uses my_app_schema (V1.1.0)
+# Assume 'older_file_path' points to a simulated V1.0.0 'full' config file:
+# Content of older_file_path (simplified):
+# {
+#   "version": "1.0.0",
+#   "schema": { "server.listen_port": {...}, "removed_setting": {...}, ... },
+#   "values": { "server.listen_port": 7000, "removed_setting": "old", ... }
+# }
 
-### 6. Encryption
+try:
+    print("\nLoading older config into V1.1.0 instance...")
+    # Initialize NEW instance with CURRENT schema, load OLD file path
+    config_migrated = ConfigMaster(schema=my_app_schema, config_path=older_file_path)
+    # Load happens in __init__, migration logic applied
 
-Encryption is enabled by providing a valid `encryption_key` during `ConfigMaster` initialization.
+    print(f"Loaded file version: {config_migrated.loaded_file_version}") # Output: 1.0.0
+    print(f"Instance version: {config_migrated.version}")         # Output: 1.1.0
+
+    # Value from old file is loaded (key exists in V1.1.0)
+    print(f"Port loaded from old: {config_migrated['server.listen_port']}") # Output: 7000
+
+    # New setting in V1.1.0 gets its default value
+    print(f"Timeout (new in V1.1.0): {config_migrated['network.timeout_seconds']}") # Output: 30.0 (V1.1.0 default)
+
+    # 'removed_setting' from old file is skipped (warning logged during load)
+
+except SchemaError as e:
+    print(f"Schema error (e.g., file version too new): {e}")
+except Exception as e:
+    print(f"Other loading error: {e}")
+```
+
+### 7. Encryption
+
+Provide a valid `encryption_key` (bytes) during `ConfigMaster` initialization.
 
 ```python
 from configmaster import ConfigMaster, generate_encryption_key
 from pathlib import Path
 
-schema_dict = {"__version__": "1.0", "api_secret": {"type": "str", "nullable": True, "help":"Secret Value"}}
+schema_dict = {"__version__": "1.0", "service.api_secret": {"type": "str", "nullable": True, "help":"Secret Value"}}
 config_path = Path("secrets.bin") # Use .bin or .enc extension convention
 key_file = Path("secret.key")
 
-# 1. Generate and store key securely (only once)
+# 1. Generate and store key securely (only once per environment/deployment)
 if not key_file.exists():
     secret_key = generate_encryption_key()
     key_file.write_bytes(secret_key)
@@ -405,9 +420,10 @@ try:
         config_path=config_path,
         encryption_key=secret_key
     )
+    # Load will fail if file doesn't exist, defaults used
 
     # 3. Set sensitive data
-    secure_config.api_secret = "my-super-secret-value"
+    secure_config['service.api_secret'] = "my-super-secret-value"
     print("Set sensitive value.")
 
     # 4. Save (automatically encrypted by the handler)
@@ -416,13 +432,14 @@ try:
     print(f"File content preview (should be ciphertext): {config_path.read_bytes()[:60]}...")
 
     # 5. Reload (automatically decrypted by the handler)
+    # Create a new instance or call secure_config.load()
     secure_config_reloaded = ConfigMaster(
         schema=schema_dict,
         config_path=config_path,
         encryption_key=secret_key
     )
-    print(f"Reloaded secret: {secure_config_reloaded.api_secret}")
-    assert secure_config_reloaded.api_secret == "my-super-secret-value"
+    print(f"Reloaded secret: {secure_config_reloaded['service.api_secret']}")
+    assert secure_config_reloaded['service.api_secret'] == "my-super-secret-value"
 
 except ImportError:
     print("Encryption requires 'cryptography'. Please install.")
@@ -435,9 +452,62 @@ finally:
 
 ```
 
-### 7. Importing/Exporting Data
+### 8. Handling Nested Configurations (Naming Convention)
 
-*   **Exporting Schema + Values:** Get a snapshot of the current instance state for UIs or APIs.
+ConfigMaster currently supports logical nesting through a **dot notation convention** in setting names. True nested schema validation is planned for a future release.
+
+**Define using dot notation:**
+
+```python
+schema = {
+    "__version__": "1.0",
+    "database.host": {
+        "type": "str",
+        "default": "localhost",
+        "help": "Database server hostname or IP address."
+    },
+    "database.port": {
+        "type": "int",
+        "default": 5432,
+        "min_val": 1,
+        "max_val": 65535,
+        "help": "Database server port."
+    },
+    "database.credentials.user": { # Deeper nesting
+        "type": "str",
+        "default": "app_user",
+        "help": "Database username."
+    },
+    "database.credentials.password": { # Sensitive
+        "type": "str",
+        "nullable": True,
+        "default": None,
+        "help": "Database password (encrypted if key provided)."
+    },
+    "server.timeout": {
+        "type": "int",
+        "default": 30,
+        "help": "Server request timeout."
+    }
+}
+config = ConfigMaster(schema=schema)
+
+# Access requires dictionary style for names with dots
+db_host = config['database.host']
+db_user = config['database.credentials.user']
+
+# Modify using dictionary style
+config['database.port'] = 5433
+config['database.credentials.password'] = "secure_password"
+
+print(f"DB Host: {db_host}, User: {db_user}, Port: {config['database.port']}")
+```
+
+**Limitation:** Validation currently applies only to the final value (e.g., `"localhost"`, `5433`). The structure (`database`, `credentials`) is purely conventional based on the name.
+
+### 9. Import/Export
+
+*   **Exporting Current State (Schema + Values):** Get a snapshot for UIs or APIs.
 
     ```python
     # config is an initialized ConfigMaster instance
@@ -446,35 +516,40 @@ finally:
     # 'current_state' dictionary structure:
     # {
     #   "version": "1.1.0", # Instance version
-    #   "schema": { ... }, # Instance schema definition
+    #   "schema": { ... }, # Instance schema definition (without version key)
     #   "settings": {
-    #     "setting_name": {
+    #     "setting.name": {
     #       "schema": { ... }, # Specific setting schema dict
-    #       "value": ...       # Current value
+    #       "value": ...       # Current value for this setting
     #     },
+    #     # Includes entries for all settings defined in instance schema
+    #     "database.host": { ... },
     #     ...
     #   }
     # }
 
     import json
-    print(json.dumps(current_state, indent=2))
+    # print(json.dumps(current_state, indent=2)) # Print the full structure
+    print(f"Exported version: {current_state.get('version')}")
+    print(f"Number of settings exported: {len(current_state.get('settings', {}))}")
     ```
 
-*   **Importing Values from Dictionary:** Update settings from a dictionary (e.g., received from an API or UI).
+*   **Importing Values from Dictionary:** Update settings from a dictionary (e.g., received from an API or UI). Only *values* are imported; version/schema info in the dict is ignored.
 
     ```python
-    new_values = {
-        "listen_port": 8888,
-        "log_level": "WARNING",
-        "db_connection_uri": None,
+    update_data = {
+        "server.listen_port": 8888, # Assuming this key exists in schema
+        "logging.level": "WARNING",
+        "database.credentials.user": "importer_user",
         "unknown_setting": "ignore_me" # Will be ignored or raise error
     }
 
     try:
         # Update config, ignore keys not in schema, validation occurs
-        config.import_config(new_values, ignore_unknown=True)
+        config.import_config(update_data, ignore_unknown=True)
         print("Import successful.")
-        print(f"Port after import: {config.listen_port}")
+        print(f"Port after import: {config['server.listen_port']}")
+        print(f"DB User after import: {config['database.credentials.user']}")
     except Exception as e:
         print(f"Import failed: {e}")
     ```
@@ -483,45 +558,44 @@ finally:
 
 ## 💡 Use Cases
 
-*   **Standard Application Settings:** Manage ports, file paths, feature flags, logging levels reliably.
-*   **Secret Management:** Securely store API keys, database credentials, tokens using encryption. Create simple "secret vaults".
-*   **Theming & UI Configuration:** Define and manage UI themes, layouts, user preferences with type safety.
-*   **Tool Configuration:** Provide robust configuration for command-line tools or utilities.
-*   **Multi-Environment Setups:** Use separate (potentially encrypted) config files for development, staging, and production managed by the same schema.
-*   **Dynamic Configuration UIs:** Use `export_schema_with_values()` to generate data for frontends (like PyQt, web UIs) that allow users to edit settings graphically, validating input based on the schema.
+*   **Reliable App Settings:** Manage ports, paths, flags, levels.
+*   **Secure Secret Storage:** Encrypt API keys, DB credentials, tokens. Build simple secret vaults.
+*   **UI Configuration:** Define and manage themes, layouts, user prefs.
+*   **CLI Tool Settings:** Provide robust configuration for your tools.
+*   **Multi-Environment Configs:** Use separate, potentially encrypted files (dev, staging, prod) with the same schema.
+*   **Dynamic Config UIs:** Feed `export_schema_with_values()` to PyQt/Web UIs for graphical editing with schema-based validation hints.
 
 ---
 
 ## 🔧 Advanced Topics
 
-*   **Custom Storage Handlers:** Need to store configs in a database, Redis, or a custom format? Implement your own handler by subclassing `configmaster.handlers.StorageHandler` and implementing the `load` and `save` methods, including encryption/decryption logic if needed. Register your handler's file extension in `configmaster.handlers.HANDLER_MAP`.
+*   **Custom Storage Handlers:** Need different storage? Subclass `configmaster.handlers.StorageHandler`, implement `load`/`save` (including encryption handling if desired), and register the extension in `configmaster.handlers.HANDLER_MAP`.
+*   **Nested Schemas (Future):** Planned support for defining schemas within schemas for true hierarchical validation and potentially attribute-style access (`config.database.port`).
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! We aim for high code quality.
+Contributions are highly welcome! We strive for clean, reliable, well-tested code.
 
-1.  **Fork** the repository on GitHub.
-2.  Create a **new branch** for your feature or bug fix.
-3.  **Code:**
-    *   Follow **PEP 8** guidelines.
-    *   Use **Black** for code formatting.
-    *   Add **type hints** (`typing`) to all functions and methods.
-    *   Write clear **docstrings** (Google style preferred).
-    *   Add **unit tests** (`pytest`) covering your changes in the `tests/` directory. Ensure high test coverage.
-4.  **Lint & Test:** Run `black .`, `mypy configmaster`, and `pytest` locally to ensure checks pass.
-5.  **Commit** your changes with descriptive messages.
-6.  Push your branch to your fork and open a **Pull Request** against the `main` branch of the original repository.
-7.  Ensure GitHub Actions CI checks pass on your PR.
+1.  **Fork & Branch:** Fork the repo and create a new branch for your work.
+2.  **Code Quality:**
+    *   Adhere to **PEP 8**.
+    *   Format code using **Black**.
+    *   Use **Ruff** for linting (see `pyproject.toml` for config).
+    *   Add **Type Hints** (`typing`) to all functions/methods.
+    *   Write clear **Docstrings** (Google style preferred).
+3.  **Testing:** Add comprehensive **unit tests** using `pytest` in the `tests/` directory. Aim for high coverage.
+4.  **Local Checks:** Run `black .`, `ruff check .`, `mypy configmaster`, and `pytest` before committing.
+5.  **Commit & PR:** Use descriptive commit messages. Open a Pull Request against the `main` branch. Ensure CI checks pass.
 
-Please see the (future) `CONTRIBUTING.md` file for more detailed guidelines.
+*(A full CONTRIBUTING.md with detailed steps is planned).*
 
 ---
 
 ## 📜 License
 
-ConfigMaster is distributed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for more information.
+ConfigMaster is distributed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
 
 ---
 
