@@ -1,46 +1,168 @@
 # pyproject.toml
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "configmaster"
-version = "0.1.0"
-description = "A configuration management suite with multiple file formats, entries typing (with a schema), nested configs etc."
+version = "0.2.0" # Reflects the last significant changes
+description = "A robust, schema-driven configuration management library for Python with encryption, versioning, and multiple backends."
 readme = "README.md"
 authors = [{ name = "ParisNeo", email = "parisneoai@gmail.com" }]
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]  # <-- MOVE IT HERE INSIDE [project]!!
+
+# --- LICENSE CHANGE END ---
 requires-python = ">=3.8"
+keywords = [
+    "config",
+    "configuration",
+    "settings",
+    "schema",
+    "validation",
+    "encryption",
+    "versioning",
+    "json",
+    "yaml",
+    "toml",
+    "sqlite",
+    "ini",
+    "settings management",
+    "options",
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    # Development Status: Adjust as appropriate (Beta seems fitting now)
+    "Development Status :: 4 - Beta",
+    # Audience
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
+    # Python Versions Supported (Update based on testing)
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    # Operating System
     "Operating System :: OS Independent",
+    # Topics
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Utilities",
+    # Typing Support
+    "Typing :: Typed",
 ]
+
+# Core runtime dependencies
 dependencies = [
-    "ascii_colors>0.10.0",
-    "pyyaml>=6.0", # Add for YAML support later
-    "toml>=0.10.2", # Add for TOML support later
-    "cryptography>=3.4", # Add for encryption later
+    "ascii_colors>=1.1.0", # For logging
+    "packaging>=20.0",     # For version parsing
+    # Handlers dependencies (add as handlers are implemented or make optional)
+    # "pyyaml>=6.0",
+    # "toml>=0.10.2",
 ]
+
+# Optional dependencies / Extras
+[project.optional-dependencies]
+encryption = [
+    "cryptography>=3.4", # Required for encryption features
+]
+yaml = [
+    "pyyaml>=6.0",       # Required for YamlHandler (when implemented)
+]
+toml = [
+    "toml>=0.10.2",        # Required for TomlHandler (when implemented)
+]
+# Example: For all available handlers (when implemented)
+# all_handlers = ["pyyaml>=6.0", "toml>=0.10.2"]
+
+# Development dependencies (testing, linting, formatting, building docs)
+dev = [
+    "pytest>=7.0",        # Testing framework
+    "pytest-cov>=3.0",    # Test coverage
+    "black>=23.0",        # Code formatter
+    "ruff>=0.1.0",        # Linter (replaces flake8, isort etc.)
+    "mypy>=1.0",          # Static type checker
+    "cryptography>=3.4",  # Needed for testing encryption features
+    # Add dependencies for other planned handlers if needed for tests
+    "pyyaml>=6.0",
+    "toml>=0.10.2",
+    # Documentation tools (optional, depends on theme)
+    "sphinx>=6.0",
+    "sphinx-rtd-theme>=1.0", # Example theme
+    # "furo", # Alternative theme
+]
+
+# Combine multiple extras easily: pip install .[encryption,dev]
+all = ["configmaster[encryption,yaml,toml]"] # Add more as needed
+
 
 [project.urls]
 Homepage = "https://github.com/ParisNeo/ConfigMaster"
 Repository = "https://github.com/ParisNeo/ConfigMaster.git"
-Documentation = "https://parisneo.github.io/ConfigMaster/" # Placeholder
+Documentation = "https://parisneo.github.io/ConfigMaster/" # Update if name changes
+Issues = "https://github.com/ParisNeo/ConfigMaster/issues"
+Changelog = "https://github.com/ParisNeo/ConfigMaster/blob/main/CHANGELOG.md"
+
+
+# --- Tool Configurations ---
+
+[tool.setuptools]
+# Include non-code files specified in MANIFEST.in (though less common with pyproject.toml)
+# include-package-data = true
+# Or explicitly list package data here
+[tool.setuptools.package-data]
+configmaster = ["py.typed"] # Mark package as type-hinted (PEP 561)
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["configmaster*"]
+# Exclude tests, docs, examples from the built package
 exclude = ["tests*", "docs*", "examples*"]
 
-[tool.setuptools.package-data]
-configmaster = ["py.typed"] # For type hinting support
+
+# --- Code Style & Linting ---
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+# include = '\.pyi?$'
+# exclude = '''
+# /(
+#     \.git
+#   | \.hg
+#   | \.mypy_cache
+#   | \.tox
+#   | \.venv
+#   | _build
+#   | buck-out
+#   | build
+#   | dist
+# )/
+# '''
+
+[tool.ruff]
+# Select rules (e.g., 'E' pycodestyle errors, 'W' warnings, 'F' pyflakes, 'I' isort, 'C' complexity)
+select = ["E", "W", "F", "I", "C", "N", "UP", "B", "A", "SIM", "ARG", "PL"] # Example selection
+ignore = ["E501"] # Ignore line length errors (handled by Black)
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.isort]
+# known-first-party = ["configmaster"] # Help isort identify your package
+
+[tool.mypy]
+python_version = "3.8"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+# strict = true # Enable for stricter checking (might require more annotations)
+# exclude = ['tests/'] # Optionally exclude tests if they are less strict
+
+# --- Testing ---
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q -v --cov=configmaster --cov-report=term-missing --cov-fail-under=80" # Example options: verbose, coverage report, fail below 80%
+testpaths = [
+    "tests", # Directory where tests are located
+]

@@ -1,0 +1,8 @@
+# docs/requirements.txt
+Sphinx>=6.0
+sphinx-rtd-theme>=1.0
+myst-parser>=1.0 # For including README.md
+packaging>=20.0 # Needed by ConfigMaster itself
+cryptography>=3.4 # Needed for examples/imports within ConfigMaster during doc build
+# Add other ConfigMaster dependencies if autodoc needs them during import
+ascii_colors>=0.10.0

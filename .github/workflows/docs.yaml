@@ -1,0 +1,68 @@
+# .github/workflows/docs.yml
+name: Build and Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main # Trigger deployment only on pushes to main
+  pull_request:
+    branches:
+      - main # Trigger build check on PRs to main
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Choose a suitable Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[encryption] # Install package itself with encryption extras needed for build
+          pip install -r docs/requirements.txt # Install documentation requirements
+
+      - name: Build Sphinx documentation
+        run: |
+          sphinx-build -b html docs docs/_build/html -W --keep-going # Build HTML, treat warnings as errors
+
+      - name: Upload artifact (for deployment job)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire directory
+          path: 'docs/_build/html'
+
+  deploy-docs:
+    name: Deploy Documentation
+    needs: build-docs # Run only after build-docs finishes successfully
+    runs-on: ubuntu-latest
+    # Grant GITHUB_TOKEN the permissions required to deploy Pages
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Specify runner + deployment step
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # Action to deploy artifact to Pages
