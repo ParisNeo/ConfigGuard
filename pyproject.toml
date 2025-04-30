@@ -6,14 +6,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "configguard"
-version = "0.2.0" # Reflects the last significant changes
-description = "A robust, schema-driven configuration management library for Python with encryption, versioning, and multiple backends."
+version = "0.3.0" # Updated version for nested sections feature
+description = "A robust, schema-driven configuration management library for Python with encryption, versioning, nested sections, and multiple backends."
 readme = "README.md"
 authors = [{ name = "ParisNeo", email = "parisneoai@gmail.com" }]
 license = "Apache-2.0"
-license-files = ["LICENSE"]  # <-- MOVE IT HERE INSIDE [project]!!
+license-files = ["LICENSE"]
 
-# --- LICENSE CHANGE END ---
 requires-python = ">=3.8"
 keywords = [
     "config",
@@ -30,6 +29,8 @@ keywords = [
     "ini",
     "settings management",
     "options",
+    "nested config", # Added keyword
+    "sections",      # Added keyword
 ]
 classifiers = [
     # Development Status: Adjust as appropriate (Beta seems fitting now)

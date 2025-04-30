@@ -5,9 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-05-01
+
+This version introduces support for nested configuration sections, allowing for more structured and organized configuration schemas.
+
+### Added
+
+*   **Nested Sections:** Introduced the ability to define hierarchical configuration sections within the schema using `"type": "section"` and a nested `"schema": {...}` definition.
+*   **`ConfigSection` Class:** Added a new internal class (`configguard.section.ConfigSection`) to represent and manage nested sections.
+*   **Recursive Operations:** Core `ConfigGuard` methods (`load`, `save`, `get_config_dict`, `import_config`, `export_schema_with_values`, `_apply_and_migrate_values`, `_build_internal_structure_from_schema`) now operate recursively to handle nested sections.
+*   **Nested Access:** Settings within sections can now be accessed using attribute (`config.section.setting`) and dictionary (`config['section']['setting']`) syntax. Schema details are accessed similarly (`config.sc_section.sc_setting`).
+*   **Autosave Propagation:** Autosave functionality now correctly triggers when modifying settings within nested sections.
+
+### Changed
+
+*   **Internal Structure:** `ConfigGuard._settings` dictionary can now hold both `ConfigSetting` and `ConfigSection` objects.
+*   **Schema Parsing:** `_build_internal_structure_from_schema` is now recursive and handles the `"section"` type.
+*   **Value Application:** `_apply_and_migrate_values` is now recursive, applying loaded values and migration logic within sections. It now also includes an `ignore_unknown` flag to control behavior for undefined keys during import/load.
+*   **Data Retrieval:** `get_config_dict` and `export_schema_with_values` now recursively build nested dictionaries representing the configuration structure and values.
+*   **Access Methods:** `__getattr__`, `__setattr__`, `__getitem__`, `__setitem__` in `ConfigGuard` updated to delegate access to `ConfigSection` objects when appropriate. Direct assignment to sections (`config.section = ...` or `config['section'] = ...`) is now disallowed.
+*   **`ConfigSetting.__init__`:** Now accepts an optional `parent` argument (either `ConfigGuard` or `ConfigSection`) to facilitate autosave triggering.
+*   **`ConfigGuard.load`:** Now passes `ignore_unknown=False` to `_apply_and_migrate_values` to enforce schema strictness during file loading (migration still handles skipping old keys).
+*   **`ConfigGuard.import_config`:** Now passes the `ignore_unknown` flag down to the recursive `_apply_and_migrate_values` method for consistent handling of unknown keys.
+
+### Removed
+
+*   (No specific removals in this version related to core functionality).
+
 ## [0.2.0] - 2025-04-30
 
-This version introduces significant refactoring for handler agnosticism, robust versioning, and integrated encryption within handlers.
+This version introduced significant refactoring for handler agnosticism, robust versioning, and integrated encryption within handlers.
 
 ### Added
 
@@ -74,4 +101,3 @@ Initial functional release of ConfigGuard.
 *   Validation logic for `None` values with `nullable=True`.
 
 ---
-*Note: Version details and dates are based on the development history simulated in the conversation.*
