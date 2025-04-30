@@ -54,7 +54,7 @@ classifiers = [
 
 # Core runtime dependencies
 dependencies = [
-    "ascii_colors>=1.1.0", # For logging
+    "ascii_colors>=0.10.1", # For logging
     "packaging>=20.0",     # For version parsing
     # Handlers dependencies (add as handlers are implemented or make optional)
     # "pyyaml>=6.0",
