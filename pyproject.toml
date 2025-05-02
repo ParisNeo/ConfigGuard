@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "configguard"
-version = "0.3.0" # Updated version for nested sections feature
+version = "0.5.0" # Updated version for instance_version param
 description = "A robust, schema-driven configuration management library for Python with encryption, versioning, nested sections, and multiple backends."
 readme = "README.md"
 authors = [{ name = "ParisNeo", email = "parisneoai@gmail.com" }]
@@ -29,8 +29,9 @@ keywords = [
     "ini",
     "settings management",
     "options",
-    "nested config", # Added keyword
-    "sections",      # Added keyword
+    "nested config",
+    "sections",
+    "dynamic config",
 ]
 classifiers = [
     # Development Status: Adjust as appropriate (Beta seems fitting now)
@@ -57,9 +58,7 @@ classifiers = [
 dependencies = [
     "ascii_colors>=0.10.1", # For logging
     "packaging>=20.0",     # For version parsing
-    # Handlers dependencies (add as handlers are implemented or make optional)
-    # "pyyaml>=6.0",
-    # "toml>=0.10.2",
+    # Handlers dependencies are optional below
 ]
 
 # Optional dependencies / Extras
@@ -68,13 +67,15 @@ encryption = [
     "cryptography>=3.4", # Required for encryption features
 ]
 yaml = [
-    "pyyaml>=6.0",       # Required for YamlHandler (when implemented)
+    "pyyaml>=6.0",       # Required for YamlHandler
 ]
 toml = [
-    "toml>=0.10.2",        # Required for TomlHandler (when implemented)
+    "toml>=0.10.2",        # Required for TomlHandler
 ]
-# Example: For all available handlers (when implemented)
-# all_handlers = ["pyyaml>=6.0", "toml>=0.10.2"]
+# SQLite uses built-in sqlite3
+
+# Combine multiple extras easily: pip install .[encryption,dev]
+all = ["configguard[encryption,yaml,toml]"]
 
 # Development dependencies (testing, linting, formatting, building docs)
 dev = [
@@ -84,17 +85,17 @@ dev = [
     "ruff>=0.1.0",        # Linter (replaces flake8, isort etc.)
     "mypy>=1.0",          # Static type checker
     "cryptography>=3.4",  # Needed for testing encryption features
-    # Add dependencies for other planned handlers if needed for tests
-    "pyyaml>=6.0",
-    "toml>=0.10.2",
+    "pyyaml>=6.0",        # Needed for testing YamlHandler
+    "toml>=0.10.2",       # Needed for testing TomlHandler
     # Documentation tools (optional, depends on theme)
     "sphinx>=6.0",
     "sphinx-rtd-theme>=1.0", # Example theme
-    # "furo", # Alternative theme
+    # GUI example dependency (optional for dev)
+    "PyQt5>=5.15",
 ]
 
-# Combine multiple extras easily: pip install .[encryption,dev]
-all = ["configguard[encryption,yaml,toml]"] # Add more as needed
+# Include dev dependencies in 'all' for convenience during development
+# all = ["configguard[encryption,yaml,toml,dev]"] # Alternative if needed
 
 
 [project.urls]
@@ -126,24 +127,9 @@ exclude = ["tests*", "docs*", "examples*"]
 [tool.black]
 line-length = 88
 target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
-# include = '\.pyi?$'
-# exclude = '''
-# /(
-#     \.git
-#   | \.hg
-#   | \.mypy_cache
-#   | \.tox
-#   | \.venv
-#   | _build
-#   | buck-out
-#   | build
-#   | dist
-# )/
-# '''
 
 [tool.ruff]
-# Select rules (e.g., 'E' pycodestyle errors, 'W' warnings, 'F' pyflakes, 'I' isort, 'C' complexity)
-select = ["E", "W", "F", "I", "C", "N", "UP", "B", "A", "SIM", "ARG", "PL"] # Example selection
+select = ["E", "W", "F", "I", "C", "N", "UP", "B", "A", "SIM", "ARG", "PL"]
 ignore = ["E501"] # Ignore line length errors (handled by Black)
 line-length = 88
 target-version = "py38"

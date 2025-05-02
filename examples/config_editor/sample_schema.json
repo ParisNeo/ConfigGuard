@@ -1,0 +1,60 @@
+{
+    "__version__": "1.0.0",
+    "general": {
+      "type": "section",
+      "help": "General application settings",
+      "schema": {
+        "app_name": {
+          "type": "str",
+          "default": "MyApp",
+          "help": "The name of the application."
+        },
+        "debug_mode": {
+          "type": "bool",
+          "default": false,
+          "help": "Enable debug logging and features."
+        },
+        "max_retries": {
+          "type": "int",
+          "default": 3,
+          "min_val": 0,
+          "max_val": 10,
+          "help": "Maximum number of retries for operations."
+        }
+      }
+    },
+    "ui_settings": {
+      "type": "section",
+      "help": "User interface preferences (some dynamic)",
+      "schema": {
+        "theme": {
+          "type": "str",
+          "default": "light",
+          "options": ["light", "dark", "system"],
+          "help": "Application color theme."
+        },
+        "font_size": {
+          "type": "int",
+          "default": 10,
+          "nullable": true,
+          "help": "Base font size (points), null for default."
+        },
+        "recent_files": {
+          "type": "list",
+          "default": [],
+          "help": "Recently opened files."
+        },
+        "window_positions": {
+          "type": "section",
+          "help": "Stores last known window positions (dynamic keys)",
+          "schema": {}
+        }
+      }
+    },
+    "api_key": {
+      "type": "str",
+      "default": null,
+      "nullable": true,
+      "help": "Optional API key for external services (sensitive)."
+    }
+  }

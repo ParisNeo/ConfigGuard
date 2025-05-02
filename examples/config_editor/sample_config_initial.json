@@ -1,0 +1,14 @@
+{
+    "general": {
+      "app_name": "MyApp",
+      "debug_mode": false,
+      "max_retries": 3
+    },
+    "ui_settings": {
+      "theme": "light",
+      "font_size": 10,
+      "recent_files": [],
+      "window_positions": {}
+    },
+    "api_key": null
+  }

@@ -12,15 +12,18 @@
 
 **Stop fighting inconsistent, error-prone, and insecure configuration files!** 🚀
 
-**ConfigGuard** elevates your Python configuration management from fragile text files and basic dictionaries to a powerful, **schema-driven fortress**. Gain unparalleled control with:
+**ConfigGuard** transforms your Python application's configuration management from a potential source of bugs and security risks into a robust, reliable, and developer-friendly system. Moving beyond simple dictionaries or basic file parsing, ConfigGuard introduces a **schema-driven fortress** for your settings, offering unparalleled control and safety.
 
-*   Strict **Type Safety** & **Validation Rules**
-*   Built-in **Encryption** for your secrets
-*   Seamless **Versioning** & **Migration**
-*   Support for **Multiple Storage Formats** (JSON now, more coming!)
-*   Intuitive **Nested Configuration** handling via sections
+Leverage a comprehensive suite of features designed for modern applications:
 
-**Why settle?** Ensure your app settings are always valid, secure, and effortlessly maintainable. Prevent runtime surprises, simplify updates, and focus on building great features, not debugging config errors.
+*   Define strict **Type Safety** and complex **Validation Rules** (`min`, `max`, `options`, `nullable`).
+*   Protect sensitive data effortlessly with built-in, handler-transparent **Encryption**.
+*   Manage configuration changes across application updates with seamless **Versioning** (optionally override instance version) and automated **Migration**.
+*   Choose your preferred **Storage Format** (JSON, YAML, TOML, SQLite included) without altering your core logic.
+*   Organize complex configurations intuitively using **Nested Sections**.
+*   Accommodate unpredictable structures with flexible **Dynamic Sections**.
+
+**Why waste time debugging subtle configuration typos or managing insecure secrets manually?** ConfigGuard catches errors early, simplifies maintenance, and secures your sensitive data, allowing you to focus on building great features.
 
 **Adopt ConfigGuard and configure with confidence!**
 
@@ -28,556 +31,548 @@
 
 ## ✨ Key Features
 
-*   📝 **Schema-Driven:** Define your configuration structure with types, defaults, help text, and validation rules (`min_val`, `max_val`, `options`, `nullable`). Includes schema versioning!
-*   <0xF0><0x9F><0xA7><0xB1> **Nested Configuration:** Organize complex settings using **sections** directly within your schema (`"type": "section"`). Access nested settings intuitively (e.g., `config.database.port`).
-*   🔒 **Built-in Encryption:** Secure sensitive configuration values transparently using Fernet encryption (requires `cryptography`). Handled automatically by storage backends.
-*   💾 **Multiple Backends:** Store configurations in various formats (JSON included, YAML/TOML/SQLite planned) through an extensible handler system. JSON handles nesting naturally.
-*   🔄 **Versioning & Migration:** Embed versions in your schema. ConfigGuard automatically handles loading older configuration versions and migrating settings gracefully, **recursively through sections**.
-*   <0xF0><0x9F><0x97><0x84>️ **Flexible Save Modes:** Choose to save only the configuration *values* (default) or the *full state* including version, schema, and values. Nested structures are preserved.
-*   <0xF0><0x9F><0xA7><0xB1> **Supported Types:** Define settings as `str`, `int`, `float`, `bool`, or `list`. *(Note: List element types are not currently validated by the schema)*.
-*   🐍 **Intuitive Access:** Access configuration values naturally using attribute (`config.section.setting`) or dictionary (`config['section']['setting']`) syntax. Access schema details easily (`config.sc_section.sc_setting`).
-*   ✔️ **Automatic Validation:** Values are automatically validated against the schema upon setting or loading, preventing invalid states, even for nested settings.
-*   📤 **Easy Export/Import:** Export the current schema and values (`export_schema_with_values()`), including nested structures, for UIs or APIs. Import values from nested dictionaries (`import_config()`).
-*   🧩 **Extensible:** Designed with a clear handler interface to easily add support for new storage backends.
+*   📝 **Schema-Driven:** Define your configuration's expected structure, types, defaults, and validation rules within a Python dictionary or a JSON file. This acts as the single source of truth, ensuring consistency and enabling static analysis benefits. Schema definitions should ideally include a `__version__` key for robust version tracking, but the instance version can also be set explicitly.
+*   <0xF0><0x9F><0xA7><0xB1> **Nested Configuration:** Structure complex settings logically using **sections**, defined directly within your schema (`"type": "section"`). Access nested settings intuitively through standard attribute or dictionary notation (e.g., `config.database.connection.pool_size`, `config['server']['ssl']['enabled']`), promoting code readability and maintainability.
+*   <0xF0><0x9F><0x94><0x91> **Dynamic Sections:** For scenarios requiring flexibility (like plugin settings or user-defined mappings), define sections with an empty schema (`"schema": {}`). These sections behave like standard Python dictionaries, allowing the addition, modification, and deletion of arbitrary key-value pairs at runtime, while still benefiting from ConfigGuard's saving, loading, and encryption mechanisms.
+*   🔒 **Built-in Encryption:** Secure sensitive configuration values (API keys, passwords, tokens) transparently using Fernet symmetric encryption (requires the `cryptography` library). Encryption is handled automatically by the storage backend during save/load operations, meaning your application code always interacts with plain, decrypted values.
+*   💾 **Multiple Backends:** Persist your configurations in various formats through an extensible handler system. ConfigGuard automatically detects the desired format based on the file extension (`.json`, `.yaml`, `.yml`, `.toml`, `.db`, `.sqlite`, `.sqlite3`). Default handlers are provided for JSON, YAML, TOML, and SQLite.
+*   🔄 **Versioning & Migration:** Embed a version string (e.g., `"1.2.0"`) in your schema's `__version__` key *or* provide it via the `instance_version` parameter during initialization. When loading configuration files, ConfigGuard compares the file's version with the instance's version. It prevents loading configurations newer than the application expects and gracefully handles older versions by merging existing values, applying new defaults, and skipping settings/sections no longer present in the current schema. This migration logic operates **recursively through nested sections**.
+*   <0xF0><0x9F><0x97><0x84>️ **Flexible Save Modes:** Control the granularity of saved data:
+    *   `mode='values'` (default): Saves only the current configuration values. Ideal for runtime updates, preserving the structure (including nesting and dynamic content) according to the chosen handler's capabilities.
+    *   `mode='full'`: Saves the complete state: the current **instance version**, the full schema *definition* (including nested structures and empty schemas for dynamic sections), and the current values. Best for backups, transferring configurations between environments, or providing comprehensive state to external tools or UIs.
+*   <0xF0><0x9F><0xA7><0xB1> **Supported Types:** Define standard settings with common Python types: `str`, `int`, `float`, `bool`, or `list`. *(Note: Validation of individual element types within lists is not currently implemented)*. Dynamic sections can store any value that is serializable by the chosen backend handler (typically JSON-serializable types).
+*   🐍 **Intuitive Access:** Interact with your configuration naturally. Access values using attribute (`config.section.setting`, `config.dynamic_section.key`) or dictionary (`config['section']['setting']`, `config['dynamic_section']['key']`) syntax. Retrieve schema details for *defined* settings using the `sc_` prefix (`config.sc_section.sc_setting`).
+*   ✔️ **Automatic Validation:** ConfigGuard automatically validates values against the schema rules (type, `nullable`, `options`, `min_val`, `max_val`) whenever a standard setting is modified or when data is loaded. This prevents invalid data from entering your configuration state. **Values added to dynamic sections bypass this schema validation.**
+*   📤 **Easy Export/Import:**
+    *   `export_schema_with_values()`: Get a snapshot of the entire configuration state (schema definition + current values, including dynamic content) as a dictionary, suitable for populating UIs, sending over APIs, or debugging. The exported `version` reflects the current *instance* version.
+    *   `import_config(data, ignore_unknown=True)`: Update the configuration *values* from a (potentially nested) dictionary. This merges data into the existing structure, applying validation for standard settings and adding/updating keys in dynamic sections. The `ignore_unknown` flag controls whether unexpected keys cause errors.
+*   🧩 **Extensible:** Built with a clear `StorageHandler` interface, allowing developers to easily implement and register support for additional storage backends (e.g., databases, cloud services, environment variables).
 
 ---
 
 ## 🤔 Why Choose ConfigGuard?
 
-*   **Eliminate Config Errors:** Catch issues at definition or load time, not during critical runtime operations.
-*   **Secure Your Secrets:** Easily encrypt API keys, passwords, and tokens without complex setup.
-*   **Future-Proof Your App:** Handle config changes between versions smoothly with built-in migration, even with structural changes.
-*   **Improve Code Clarity:** Self-documenting schemas and clear section structures make settings understandable and maintainable.
-*   **Manage Complexity:** Tame complex configurations by organizing them into logical, nested sections.
-*   **Increase Productivity:** Stop writing boilerplate config parsing/validation code.
-*   **Storage Freedom:** Use JSON today, YAML/TOML/DB tomorrow, without rewriting your core logic.
+ConfigGuard addresses common pain points in configuration management:
+
+*   **Eliminate Runtime Config Errors:** Instead of discovering a typo in a port number or an invalid logging level only when your application crashes, ConfigGuard catches these errors early – either when the schema is defined or when data is loaded/set – thanks to its strict validation against your predefined rules.
+*   **Secure Your Secrets with Ease:** Stop storing sensitive API keys, database passwords, or tokens in plain text files or insecure environment variables. ConfigGuard's integrated encryption provides a simple, transparent mechanism to protect this data at rest, requiring only a single encryption key and the `cryptography` library.
+*   **Future-Proof Your Application:** As your application evolves, so will its configuration needs. ConfigGuard's versioning system (using schema `__version__` or explicit `instance_version`) allows you to update your schema confidently. When loading older config files, it automatically attempts to migrate the data, preserving user settings where possible and applying new defaults, significantly reducing the friction of application updates.
+*   **Improve Code Clarity and Maintainability:** Schemas act as self-documentation for your configuration settings. The explicit definition of types, defaults, validation rules, and help strings makes it much easier for developers (including your future self) to understand what each setting does and how to configure it correctly. Nested sections further enhance organization.
+*   **Manage Complexity Effectively:** Modern applications often have numerous configuration options. ConfigGuard allows you to tame this complexity by organizing settings into logical, hierarchical sections (both predefined and dynamic), making the overall configuration easier to navigate and manage.
+*   **Increase Developer Productivity:** Eliminate the need to write repetitive, error-prone boilerplate code for parsing different config file formats, validating data types, checking ranges, handling defaults for missing values, and managing encryption. ConfigGuard handles these common tasks robustly.
+*   **Gain Storage Freedom:** Start with JSON for simplicity, move to YAML for readability, use TOML if preferred, or leverage SQLite for transactional saves – all without changing how your application code interacts with the configuration object. The backend is abstracted away by the handler system.
 
 ---
 
 ## 🚀 Installation
 
+ConfigGuard requires Python 3.8 or later.
+
+**Base Installation (includes JSON and SQLite support):**
+
 ```bash
 pip install configguard
 ```
 
-For **encryption** features:
+**With Optional Features (Extras):**
+
+ConfigGuard uses "extras" to manage dependencies for optional features like encryption and specific file format handlers.
+
+*   **Encryption:** Requires the `cryptography` library.
+    ```bash
+    pip install configguard[encryption]
+    ```
+
+*   **YAML Support:** Requires the `PyYAML` library.
+    ```bash
+    pip install configguard[yaml]
+    ```
+
+*   **TOML Support:** Requires the `toml` library.
+    ```bash
+    pip install configguard[toml]
+    ```
+
+*   *(SQLite support uses Python's built-in `sqlite3` and needs no extra pip install).*
+
+**Installing Multiple Extras:**
 
 ```bash
-pip install configguard[encryption]
-# or separately: pip install cryptography
+pip install configguard[encryption,yaml,toml]
 ```
 
-*(Support for other backends like YAML/TOML will require optional installs in the future).*
+**Installing All Optional Features:**
+
+```bash
+pip install configguard[all]
+```
+
+**For Development:**
+
+```bash
+git clone https://github.com/ParisNeo/ConfigGuard.git
+cd ConfigGuard
+pip install -e .[dev]
+```
+This installs ConfigGuard itself, plus tools like `pytest`, `black`, `ruff`, `mypy`, and the dependencies needed for all built-in handlers, encryption, and the GUI example.
 
 ---
 
 ## ⚡ Quick Start
+
+This example demonstrates defining a schema, initializing ConfigGuard (showing different ways to set the version), accessing/modifying values, and saving.
 
 ```python
 from configguard import ConfigGuard, ValidationError, generate_encryption_key
 from pathlib import Path
 import typing # Required for type hinting the schema dict
 
-# 1. Define your schema (with version and nested sections!)
-CONFIG_VERSION = "1.0.0"
-my_schema: typing.Dict[str, typing.Any] = { # Add type hint for clarity
-    "__version__": CONFIG_VERSION,
-    "server": {
-        "type": "section",
-        "help": "Server settings",
+# 1. Define your schema: Includes version, standard section, dynamic section, top-level setting.
+SCHEMA_VERSION = "1.1.0"
+my_schema: typing.Dict[str, typing.Any] = {
+    "__version__": SCHEMA_VERSION, # Standard way to define version
+    "server": { # Standard section
+        "type": "section", "help": "Core web server settings.",
         "schema": {
-            "host": { "type": "str", "default": "127.0.0.1", "help": "Listen host" },
-            "port": { "type": "int", "default": 8080, "min_val": 1024, "help": "Listen port" }
+            "host": { "type": "str", "default": "127.0.0.1", "help": "IP address to bind to." },
+            "port": { "type": "int", "default": 8080, "min_val": 1024, "max_val": 65535, "help": "Port number." }
         }
     },
-    "database": {
-        "type": "section",
-        "help": "Database connection",
-        "schema": {
-            "uri": { "type": "str", "nullable": True, "default": None, "help": "Connection URI" },
-            "timeout": { "type": "int", "default": 5, "help": "Connection timeout (sec)" }
-        }
+    "plugin_data": { # DYNAMIC section
+        "type": "section", "help": "Stores runtime data or settings for plugins.",
+        "schema": {} # Empty schema marks it as dynamic
     },
-    "api_key": { # Top-level setting
-        "type": "str",
-        "nullable": True,
-        "default": None,
-        "help": "Optional global API Key (sensitive)."
+    "log_level": { # Standard top-level setting
+        "type": "str", "default": "INFO",
+        "options": ["DEBUG", "INFO", "WARNING", "ERROR"], "help": "Logging verbosity."
     }
 }
 
-# 2. Setup paths and optional encryption key
-config_file = Path("app_settings.bin") # Use .bin for encrypted
-# key = generate_encryption_key() # Generate once and store securely!
-# print(f"Generated Key: {key.decode()}")
-# Example key (DO NOT use this in production, generate your own!)
-key = b'p4SDfnaAZFq9N5EhrNDfGVOQ1C6pShR1w7TKVmqw0rI='
+# Schema without explicit version
+my_schema_no_version = my_schema.copy(); del my_schema_no_version["__version__"]
 
-# 3. Initialize ConfigGuard (with encryption)
+# 2. Setup file path and optional encryption key
+config_file = Path("my_app_config.yaml") # Using YAML handler (requires PyYAML)
+encryption_key = generate_encryption_key() # Store securely!
+
+# 3. Initialize ConfigGuard instance (Different Versioning Examples)
 try:
+    # Option A: Explicitly set instance version (overrides schema version)
+    explicit_version = "1.2.0-dev"
     config = ConfigGuard(
         schema=my_schema,
+        instance_version=explicit_version, # <-- Explicit version
         config_path=config_file,
-        encryption_key=key
+        encryption_key=encryption_key
     )
-except ImportError:
-    print("Encryption requires 'cryptography'. Install with: pip install configguard[encryption]")
-    # Initialize without encryption as a fallback for the example
-    config = ConfigGuard(schema=my_schema, config_path=Path("app_settings.json"))
+    print(f"Initialized with Explicit Version: {config.version}") # -> 1.2.0-dev
 
+    # Option B: Use version from schema (most common)
+    # config = ConfigGuard(schema=my_schema, config_path=config_file, encryption_key=encryption_key)
+    # print(f"Initialized with Schema Version: {config.version}") # -> 1.1.0
 
-# 4. Access values (attribute or item access for sections/settings)
-print(f"Server Host: {config.server.host}")
-print(f"Database Timeout: {config['database']['timeout']}")
-print(f"API Key: {config.api_key}") # Top-level access
+    # Option C: No version in schema or parameter (defaults to 0.0.0)
+    # config = ConfigGuard(schema=my_schema_no_version, config_path=config_file, encryption_key=encryption_key)
+    # print(f"Initialized with Default Version: {config.version}") # -> 0.0.0
+
+# Handle missing dependencies for the chosen handler
+except ImportError as e:
+    print(f"ERROR: Missing dependency for {config_file.suffix} files: {e}")
+    exit()
+except Exception as e:
+    print(f"ERROR: Failed to initialize ConfigGuard: {e}")
+    exit()
+
+# 4. Access values (defaults initially, unless file existed)
+print(f"Initial Server Host: {config.server.host}") # -> '127.0.0.1'
+print(f"Initial Log Level: {config['log_level']}") # -> 'INFO'
+print(f"Initial Plugin Data: {config.plugin_data.get_config_dict()}") # -> {}
 
 # 5. Access schema details
-print(f"Port Help: {config.server.sc_port.help}")
-print(f"Is DB URI nullable? {config['database']['sc_uri'].nullable}")
+print(f"Help for server port: {config.server.sc_port.help}")
 
-# 6. Modify values (validation happens automatically)
+# 6. Modify values
 try:
-    config.server.port = 9000
-    config['database']['uri'] = "postgresql://user:pass@host/db"
-    config.api_key = "my-super-secret"
-    # config.server.port = 80 # This would raise ValidationError
+    config.server.port = 9090
+    config['log_level'] = 'DEBUG'
+    config.plugin_data['active_plugin'] = 'analyzer_v2' # Dynamic add
+    config.plugin_data.user_prefs = {'theme': 'dark'} # Dynamic add
 except ValidationError as e:
-    print(f"Error setting value: {e}")
+    print(f"VALIDATION ERROR: {e}")
 
-print(f"New Port: {config.server.port}")
-print(f"DB URI set: {'Yes' if config.database.uri else 'No'}")
+print(f"Updated Port: {config.server.port}") # -> 9090
+print(f"Active Plugin: {config.plugin_data['active_plugin']}") # -> 'analyzer_v2'
 
-# 7. Save configuration values (encrypted if key was provided)
-# Use mode='values' for typical runtime saving (preserves nesting)
-config.save(mode='values')
-print(f"Settings saved to {config.config_path}") # Access internal attr for demo
+# 7. Save configuration (mode='values' is default, saves to config_file)
+# The file will contain the version set during init (explicit_version in this case)
+# if saved with mode='full'. Mode='values' does not save version info.
+config.save()
+print(f"Configuration saved to {config_file} (encrypted).")
 
-# Load on next init is automatic! If the file exists, ConfigGuard loads it.
-# Example:
-# config_reloaded = ConfigGuard(schema=my_schema, config_path=config_file, encryption_key=key)
-# print(f"Reloaded Port: {config_reloaded.server.port}") # Output: 9000
+# To save with version and schema:
+# config.save(mode='full', filepath='my_app_config_full.yaml')
+
 ```
 
 ---
 
-## 📚 Core Concepts
+## 📚 Core Concepts Detailed
 
-*   **Schema (`__version__`, Settings Definitions, Sections):** The blueprint for your configuration. A Python dictionary defining the version, settings names, types (`str`, `int`, `float`, `bool`, `list`), defaults, validation rules (`nullable`, `options`, `min_val`, `max_val`), and help text. Use `"type": "section"` with a nested `"schema": {...}` dictionary to define hierarchical structures. The top-level `__version__` key is mandatory for version control of the entire configuration.
-*   **ConfigGuard Object:** Your main interface. Holds the schema and current values. Access settings and sections via attribute (`config.section.setting`) or dictionary (`config['section']['setting']`) syntax. Access schema details using the `sc_` prefix (`config.sc_section.sc_setting` or `config['section']['sc_setting']`).
-*   **ConfigSection Object:** An internal object representing a defined section. It provides the same attribute/dictionary access for its contained settings and subsections.
-*   **Storage Handlers:** The engine parts handling specific file formats (JSON, future YAML/TOML/DB) and transparent encryption/decryption based on the key you provide to `ConfigGuard`. Chosen based on file extension (e.g., `.json`, `.bin`, `.enc` often map to `JsonHandler`). JSON handlers naturally support nested structures.
+*   **Schema:** The cornerstone of ConfigGuard.
+    *   **Structure:** A Python dictionary defining the entire configuration layout.
+    *   **Versioning:** Determined by the `instance_version` parameter passed to the constructor, which takes precedence. If not provided, it falls back to the `__version__` key within the schema dictionary. If neither is present, it defaults to `"0.0.0"`. The version must be parseable by the `packaging` library.
+    *   **Settings:** Keys in the schema dictionary represent setting names. Each setting has a definition dictionary specifying its properties.
+    *   **Sections (`"type": "section"`):** Allows hierarchical grouping. Requires a nested `"schema"` dictionary which defines the contents of the section.
+    *   **Dynamic Sections (`"schema": {}`):** A special type of section defined with an empty schema dictionary. These sections allow runtime addition/modification/deletion of arbitrary key-value pairs without schema validation for those pairs.
+    *   **Setting Definition Keys:** (`type`, `default`, `help`, `nullable`, `options`, `min_val`, `max_val`). See previous sections for details.
+
+*   **ConfigGuard Object:** The main object you interact with.
+    *   **Initialization:** Created with the schema definition, optionally `instance_version`, `config_path`, `encryption_key`, `autosave`, and `handler`. The instance version is determined based on parameter/schema precedence. Automatically attempts to load data from `config_path` if provided.
+    *   **`version` Attribute:** Stores the determined instance version (`config.version`).
+    *   **Access:** Provides attribute (`config.setting`) and dictionary (`config['setting']`) access to top-level settings and sections.
+    *   **Schema Access:** Use `config.sc_setting` or `config['sc_setting']` to get the `SettingSchema` object for a *defined* setting, or the schema dictionary for a section.
+
+*   **ConfigSection Object:** Represents a nested section defined in the schema.
+    *   **Access:** Provides the same attribute (`section.nested_setting`) and dictionary (`section['nested_setting']`) access for items defined within its schema, or for dynamic keys if it's a dynamic section.
+    *   **Modification Rules:** Interact with the *contents* of a `ConfigSection`. You **cannot replace the section itself** via assignment.
+
+*   **Dynamic Sections (`"schema": {}`):**
+    *   **Purpose:** Flexibility for unknown keys (plugins, runtime data).
+    *   **Behavior:** Acts like a nested dictionary. Add/update/delete keys freely.
+    *   **Trade-off:** No schema validation for dynamic content.
+    *   **Integration:** Dynamic content included in save/load/export/encryption.
+
+*   **Storage Handlers:** Abstraction layer for persistence.
+    *   **Selection:** Automatic based on `config_path` suffix (`.json`, `.yaml`, `.yml`, `.toml`, `.db`, `.sqlite`, `.sqlite3`, `.bin`, `.enc`).
+    *   **Encryption:** Managed transparently if `encryption_key` is provided.
+    *   **Structure Handling:** JSON/YAML/TOML preserve nesting. SQLite flattens keys (`server.port`) and stores values as encrypted JSON strings.
+
 *   **Save Modes (`values` vs `full`):**
-    *   `config.save(mode='values')`: Saves *only* current configuration values. Nested structures are preserved according to the handler's format (e.g., nested JSON objects). Ideal for runtime.
-    *   `config.save(mode='full')`: Saves everything: instance version, the full schema definition (including section structures), and current values (including nesting). Best for backups, transfers, or feeding external tools/UIs.
-*   **Versioning & Migration:** When loading (especially `full` files), `ConfigGuard` compares versions. It prevents loading newer files, and smartly merges older files into the current schema **recursively through sections** (loading existing values, using new defaults, skipping removed settings/sections). Type coercion between compatible types (int/float/str) is attempted if types differ.
-*   **Encryption:** Provide an `encryption_key` (a Fernet key) during initialization. The storage handler encrypts data before saving and decrypts after loading. Your code interacts with plain values; the file on disk is secured (requires `cryptography`). Works transparently with nested structures.
+    *   `mode='values'`: Saves current *values* only (structured per handler). No version/schema info.
+    *   `mode='full'`: Saves a complete snapshot: the current `instance_version`, the schema *definition*, and current *values*.
+
+*   **Versioning & Migration:** Facilitates managing configuration changes.
+    *   **Mechanism:** Compares loaded file's version (if present) with the `config.version` (instance version).
+    *   **Loading Newer:** Raises `SchemaError`.
+    *   **Loading Older:** Merges data recursively (loads matching, applies new defaults, skips removed).
+    *   **Logging:** Warnings logged for skipped keys/coercion failures.
+
+*   **Encryption:** Provides confidentiality using Fernet.
+    *   **Key Management:** Use `configguard.generate_encryption_key()`. **Store the key securely.**
+    *   **Transparency:** Handled by the storage handler. Application code sees plain data.
 
 ---
 
 ## 📖 Detailed Usage
 
-### 1. Defining the Schema (with Sections)
+### 1. Defining the Schema
 
-Create a Python dictionary. The top level needs `__version__`. Other keys are your settings or sections. Define sections using `"type": "section"` and a nested `"schema"` key.
+
+(See Core Concepts section for key details)
 
 ```python
-# Example Schema Dictionary with Sections
+# More complex schema example
 import typing
+CONFIG_VERSION = "3.0.0"
 
-CONFIG_VERSION = "2.1.0"
-
-my_app_schema: typing.Dict[str, typing.Any] = {
+complex_schema: typing.Dict[str, typing.Any] = {
     "__version__": CONFIG_VERSION,
-
-    "server": {
-        "type": "section",
-        "help": "Web server configuration.",
+    "network": {
+        "type": "section", "help": "Network settings",
         "schema": {
-            "host": {
-                "type": "str",
-                "default": "127.0.0.1",
-                "help": "Hostname or IP address to bind the server to.",
-            },
-            "port": {
-                "type": "int",
-                "default": 9090,
-                "min_val": 1024,
-                "max_val": 65535,
-                "help": "Port number for incoming connections."
-            },
-            "tls": { # Nested section within 'server'
-                "type": "section",
-                "help": "TLS/SSL settings.",
+            "hostname": {"type": "str", "default": "auto", "help": "System hostname (or 'auto')"},
+            "port": {"type": "int", "default": 8000, "min_val": 1, "max_val": 65535},
+            "allowed_ips": {"type": "list", "default": ["127.0.0.1", "::1"], "help": "List of allowed client IPs"},
+        }
+    },
+    "performance": {
+        "type": "section", "help": "Performance tuning",
+        "schema": {
+            "worker_threads": {"type": "int", "default": 4, "min_val": 1, "max_val": 64},
+            "cache": {
+                "type": "section", "help": "Caching options",
                 "schema": {
-                    "enabled": { "type": "bool", "default": False, "help": "Enable TLS." },
-                    "cert_path": { "type": "str", "nullable": True, "default": None, "help": "Path to certificate file." }
+                    "enabled": {"type": "bool", "default": True},
+                    "max_size_mb": {"type": "int", "default": 1024, "min_val": 0},
+                    "strategy": {"type": "str", "default": "LRU", "options": ["LRU", "FIFO", "LFU"]},
                 }
             }
         }
     },
-    "logging": {
-        "type": "section",
-        "help": "Application logging settings.",
-        "schema": {
-            "level": {
-                "type": "str",
-                "default": "INFO",
-                "options": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                "help": "Logging verbosity level."
-            },
-            "file_path": {
-                "type": "str",
-                "default": None,
-                "nullable": True,
-                "help": "Path to log file (if enabled)."
-            },
-        }
+    "user_scripts": { # Dynamic section
+        "type": "section", "help": "Paths to user-provided scripts.",
+        "schema": {}
     },
-    "credentials": { # Section for sensitive data
-        "type": "section",
-        "help": "External service credentials.",
-        "schema": {
-             "api_secret": {
-                "type": "str",
-                "default": None,
-                "nullable": True,
-                "help": "Secret API key (will be encrypted)."
-            }
-        }
-    },
-    "global_timeout": { # Top-level setting
-        "type": "float",
-        "default": 60.0,
-        "min_val": 0.0,
-        "help": "Global operation timeout in seconds."
-    }
+    "enable_analytics": { "type": "bool", "default": False, "help": "Enable anonymous usage analytics."}
 }
+
+# Optionally save schema to JSON for reuse or distribution
+# import json
+# with open("app_schema_v3.json", "w") as f:
+#     json.dump(complex_schema, f, indent=2)
 ```
 
-**Schema Definition Keys:**
-
-*   `__version__` (str, **Required**): Semantic version (e.g., "1.0.0"). Applies to the entire schema.
-*   For **Settings:**
-    *   `type` (str, **Required**): `"str"`, `"int"`, `"float"`, `"bool"`, `"list"`.
-    *   `default` (any, **Required unless `nullable=True`**): Default value. Must match `type` and constraints. Omit if `nullable=True` to default to `None`.
-    *   `help` (str, **Required**): Description for docs/UIs.
-    *   `nullable` (bool, Optional): `True` allows `None` value. Default: `False`.
-    *   `options` (list, Optional): List of allowed values.
-    *   `min_val` (int/float, Optional): Minimum numeric value.
-    *   `max_val` (int/float, Optional): Maximum numeric value.
-*   For **Sections:**
-    *   `type` (str, **Required**): Must be `"section"`.
-    *   `schema` (dict, **Required**): A nested dictionary defining the settings and subsections within this section.
-    *   `help` (str, Optional): Description for the section.
 
 ### 2. Initializing ConfigGuard
 
-Pass the schema (dict or file path) and optionally the config file path and encryption key.
+Load schema from dictionary or file path. Provide `config_path`, `encryption_key`, and optionally `instance_version`.
 
 ```python
-from configguard import ConfigGuard, generate_encryption_key
+from configguard import ConfigGuard, generate_encryption_key, SchemaError, HandlerError, EncryptionError
 from pathlib import Path
 
-# Assume my_app_schema is the nested dictionary defined above
-schema_file = Path("path/to/my_schema.json") # Can load schema from JSON file
-cfg_path = Path("my_settings.json") # or .bin, .enc for encrypted
-# Assume enc_key is a valid Fernet key obtained via generate_encryption_key()
-
-# Basic: Load schema dict, save/load values to cfg_path
-# config1 = ConfigGuard(schema=my_app_schema, config_path=cfg_path)
-
-# Load schema from file, save/load values
-# config2 = ConfigGuard(schema=schema_file, config_path=cfg_path)
-
-# With encryption (key must be bytes)
-# config3 = ConfigGuard(schema=my_app_schema, config_path="cfg.bin", encryption_key=enc_key)
-
-# With autosave (saves values only on change via setattr/setitem, including nested)
-# config4 = ConfigGuard(schema=my_app_schema, config_path=cfg_path, autosave=True)
-
-# No config file path (in-memory config)
-# config5 = ConfigGuard(schema=my_app_schema)
-# config5.server.port = 1234 # Exists only in memory until save() called
-```
-
-ConfigGuard automatically tries to `load()` from `config_path` during initialization.
-
-### 3. Accessing Settings and Schema (Nested)
-
-Use attribute or dictionary syntax to traverse sections. Use the `sc_` prefix for schema details.
-
-```python
-# Assume 'config' is an initialized ConfigGuard instance with my_app_schema
-
-# --- Accessing Values ---
-server_host = config.server.host
-server_port = config['server']['port']
-tls_enabled = config.server.tls.enabled # Deeper nesting
-log_level = config['logging']['level']
-global_to = config.global_timeout # Top-level
-
-print(f"Host: {server_host}, Port: {server_port}, TLS: {tls_enabled}")
-
-# --- Accessing Schema ---
-port_schema = config.server.sc_port # Schema of setting in section
-tls_schema = config.server.sc_tls # Schema of nested section
-tls_enabled_schema = config.server.tls.sc_enabled # Schema of setting in nested section
-log_level_options = config['logging']['sc_level'].options
-global_to_help = config.sc_global_timeout.help # Schema of top-level
-
-print(f"Port Help: {port_schema.help}")
-print(f"TLS Section Schema Keys: {list(tls_schema.keys())}")
-print(f"Log Level Options: {log_level_options}")
-```
-
-### 4. Modifying Settings (Nested)
-
-Assign values directly using attribute or dictionary syntax. Validation occurs automatically.
-
-```python
-# Assume 'config' is an initialized ConfigGuard instance
-
-config.server.port = 8443
-config['logging']['level'] = 'WARNING'
-config.server.tls.enabled = True
-config.server.tls.cert_path = "/etc/ssl/certs/mycert.pem"
-config.credentials.api_secret = "new-encrypted-secret"
+schema_source = complex_schema # Or Path("app_schema_v3.json")
+config_file = Path("app_config_v3.db") # Using SQLite
+enc_key = generate_encryption_key() # Store this securely!
+instance_v = "3.1.0" # Explicit version
 
 try:
-    config.server.port = 100 # Invalid: below min_val
-except ValidationError as e:
-    print(f"Validation failed as expected: {e}")
-    # Value remains unchanged from default or previous valid value
-    print(f"Server port remains: {config.server.port}")
+    # Initialize with explicit version overriding any schema version
+    config = ConfigGuard(
+        schema=schema_source,
+        config_path=config_file,
+        encryption_key=enc_key,
+        instance_version=instance_v # Provide the version here
+    )
+    print(f"ConfigGuard initialized with version: {config.version}")
+
+    # Or, initialize using schema version (if instance_version=None)
+    # config = ConfigGuard(schema=schema_source, config_path=config_file, ...)
+    # print(f"ConfigGuard initialized with version: {config.version}") # Would use schema's __version__
+
+except FileNotFoundError as e: print(f"Schema file error: {e}")
+except SchemaError as e: print(f"Schema/Version error: {e}") # Catches invalid version format
+except (HandlerError, ImportError) as e: print(f"Configuration handler error: {e}")
+except EncryptionError as e: print(f"Encryption error: {e}")
+except Exception as e: print(f"Unexpected initialization error: {e}")
+
 ```
 
-### 5. Saving & Loading (Nested)
+### 3. Accessing Settings and Schema
 
-Loading usually happens automatically during initialization. Manual `load()` and `save()` work as before, handling nested structures correctly.
+(Usage remains identical to previous examples)
 
 ```python
-# Assume 'config' is an initialized ConfigGuard instance
+cache_strategy = config.performance.cache.strategy
+print(f"Cache Strategy: {cache_strategy}")
+# ... etc ...
+```
 
-# --- Saving ---
+### 4. Modifying Settings
 
-# Save ONLY the current values (common use case, preserves nesting)
-config.save(mode='values')
-print(f"Values saved to {config.config_path}")
+(Usage remains identical to previous examples)
 
-# Save the FULL state (version, nested schema definition, nested values)
-backup_path = Path(f"config_backup_v{config.version}.json")
-config.save(filepath=backup_path, mode='full')
-print(f"Full state saved to {backup_path}")
+```python
+config.performance.worker_threads = 8
+config.user_scripts['on_shutdown'] = '/opt/scripts/shutdown.sh'
+# ... etc ...
+```
 
+### 5. Saving & Loading
 
-# --- Loading (Manual Trigger) ---
+`save()` persists the current state. `load()` reads from disk. `mode='full'` saves the current *instance* version.
+
+```python
+# Save current values (encrypted to SQLite DB)
+config.save() # Defaults to mode='values'
+
+# Save a full backup (will include instance_version="3.1.0" in this example)
 try:
-    print("Attempting manual reload...")
-    config.load() # Reloads from the path specified in __init__
-    print("Configuration reloaded successfully.")
-    print(f"Reloaded TLS enabled status: {config.server.tls.enabled}")
-except FileNotFoundError:
-    print("Config file not found for manual load.")
+    backup_path = Path("config_v3.1_backup.json")
+    config.save(filepath=backup_path, mode='full')
+    print(f"Full backup saved to {backup_path}")
+except Exception as e:
+    print(f"Failed to save backup: {e}")
+
+# Manual Load
+try:
+    config.load() # Reloads from the path config was initialized with
+    print("Reload complete.")
 except Exception as e:
     print(f"Error during manual load: {e}")
 
 ```
 
-### 6. Versioning & Migration (Nested)
+### 6. Versioning & Migration
 
-Versioning is handled automatically during `load()` based on the top-level `__version__`. Migration logic applies **recursively** through sections.
-
-*   If a section exists in the old file but not the new schema, it's skipped (warning logged).
-*   If a section is new in the schema, its settings get default values.
-*   If a setting moves between sections, it will likely be treated as removed from the old location and added (with default) in the new one during migration (unless custom migration logic is added in the future).
-
-See the `examples/basic_usage.py` for a simulation.
-
-### 7. Encryption (Nested)
-
-Encryption works transparently for all settings, regardless of nesting level, if an `encryption_key` is provided during initialization. The structure is preserved, but the values within the saved file are encrypted.
+Handled automatically during load based on `__version__`. Check logs for warnings about skipped keys or sections from older files.
 
 ```python
-# Assume enc_key is a valid Fernet key
-# Assume schema includes sensitive fields like config.credentials.api_secret
+# --- Simulation ---
+# Imagine current schema is V2.0.0
+# Load a config file saved with schema V1.0.0:
+# config_v1_path = Path("old_config_v1.json")
+# try:
+#    config_v2_instance = ConfigGuard(schema=schema_v2_dict, config_path=config_v1_path)
+#    # ConfigGuard logs warnings for settings in v1 file not in v2 schema.
+#    # Settings in v2 schema but not v1 file get v2 defaults.
+#    # Matching settings have their values loaded from v1 file.
+#    # Dynamic section content (if section exists in both) is loaded from v1 file.
+# except SchemaError as e: # e.g. if v1 file version > v2 schema version
+#    print(f"Version mismatch: {e}")
+```
 
-secure_config = ConfigGuard(schema=my_app_schema, config_path="secure_cfg.bin", encryption_key=enc_key)
+### 7. Encryption
 
-secure_config.credentials.api_secret = "very_secret_value"
-secure_config.server.host = "secure.example.com" # Non-sensitive also saved
+Provide `encryption_key` at init. Generation and storage are key.
 
-secure_config.save(mode='values') # Saves nested structure, encrypts values
+```python
+from configguard import generate_encryption_key, ConfigGuard
 
-# Reloading decrypts automatically
-reloaded_secure = ConfigGuard(schema=my_app_schema, config_path="secure_cfg.bin", encryption_key=enc_key)
-print(f"Reloaded secret: {reloaded_secure.credentials.api_secret}") # Output: very_secret_value
-print(f"Reloaded host: {reloaded_secure.server.host}") # Output: secure.example.com
+# Generate key (DO THIS ONCE and store securely!)
+# new_key = generate_encryption_key()
+# print(f"Store this key safely: {new_key.decode()}")
+
+# Use stored key
+stored_key = b'YOUR_SECURELY_STORED_32_BYTE_URLSAFE_BASE64_KEY'
+
+secure_config = ConfigGuard(
+    schema=complex_schema,
+    config_path="secure_app.bin", # Use .bin or .enc for encrypted files
+    encryption_key=stored_key
+)
+
+# Modify sensitive and non-sensitive data
+secure_config.network.hostname = "prod.server.local"
+secure_config.user_scripts.deploy_key = "ssh-rsa AAA..." # Dynamic sensitive data
+
+# Save - data is encrypted on disk
+secure_config.save()
+
+# Loading automatically decrypts
+# loaded_config = ConfigGuard(...)
+# print(loaded_config.user_scripts.deploy_key) # -> Prints plain key
 ```
 
 ### 8. Handling Nested Configurations
 
-ConfigGuard supports true hierarchical configuration through **sections**. Define sections in your schema using `"type": "section"` and a nested `"schema"` dictionary.
-
-**Schema Definition:**
+Define sections within sections in your schema. Access follows the structure naturally. Modification rules apply at each level.
 
 ```python
-schema = {
-    "__version__": "1.0",
-    "database": {
-        "type": "section",
-        "help": "Primary Database",
-        "schema": {
-            "host": { "type": "str", "default": "localhost" },
-            "port": { "type": "int", "default": 5432 },
-            "credentials": { # Nested section
-                "type": "section",
-                "schema": {
-                    "user": { "type": "str", "default": "app_user" },
-                    "password": { "type": "str", "nullable": True } # Sensitive
-                }
-            }
+# Accessing deeply nested setting (from complex_schema)
+cache_size = config.performance.cache.max_size_mb
+print(f"Cache size: {cache_size}")
+
+# Modifying deeply nested setting
+config.performance.cache.enabled = False
+config['performance']['cache']['strategy'] = 'FIFO' # Item access also works
+
+# Cannot assign to nested section
+# config.performance.cache = {"enabled": False} # INVALID
+```
+
+### 9. Import/Export
+
+`export_schema_with_values()` provides a full snapshot. `import_config()` merges value updates.
+
+```python
+# --- Export ---
+full_state = config.export_schema_with_values()
+
+# Example structure of full_state['settings']:
+# {
+#   "network": { "schema": { ... }, "value": { "hostname": "auto", ... } },
+#   "performance": {
+#     "schema": { ... },
+#     "value": {
+#       "worker_threads": 8,
+#       "cache": { "enabled": False, "max_size_mb": 1024, "strategy": "FIFO" } # Value is nested
+#     }
+#   },
+#   "user_scripts": { # Dynamic section
+#      "schema": { "type": "section", "help": "...", "schema": {} },
+#      "value": { # Value contains the dynamic keys
+#          "on_shutdown": "/opt/scripts/shutdown.sh",
+#          "data_processor": { "type": "python", "path": "~/scripts/process.py" }
+#      }
+#   },
+#   "enable_analytics": { "schema": { ... }, "value": False }
+# }
+
+import json
+# print(json.dumps(full_state, indent=2))
+
+# --- Import ---
+update_data = {
+    "performance": {
+        "cache": {
+            "max_size_mb": 2048, # Update nested standard setting
+            "unknown_cache_param": True # Ignored if ignore_unknown=True
         }
     },
-    "cache": {
-        "type": "section",
-        "help": "Caching Layer",
-        "schema": {
-            "host": { "type": "str", "default": "127.0.0.1" },
-            "port": { "type": "int", "default": 6379 }
-        }
-    }
+    "user_scripts": { # Add/update dynamic keys
+        "new_report_script": "/usr/local/bin/report.py",
+        "data_processor": { "type": "rust", "path": "/opt/bin/process_rs" } # Update dynamic value
+    },
+    "unknown_section": True # Ignored if ignore_unknown=True
 }
+
+try:
+    # Merge updates, ignore keys not in schema (unless in dynamic section)
+    config.import_config(update_data, ignore_unknown=True)
+    print(f"Cache size after import: {config.performance.cache.max_size_mb}") # -> 2048
+    print(f"Data processor after import: {config.user_scripts.data_processor}")
+except SettingNotFoundError as e:
+     print(f"Import failed (ignore_unknown=False): {e}")
+except Exception as e:
+    print(f"Import failed: {e}")
 ```
-
-**Access and Modification:**
-
-```python
-config = ConfigGuard(schema=schema)
-
-# Access
-db_host = config.database.host
-db_user = config.database.credentials.user
-cache_port = config['cache']['port']
-
-# Modify
-config.database.port = 5433
-config.database.credentials.password = "secure_password"
-config['cache']['host'] = "redis.internal"
-
-print(f"DB Host: {db_host}, User: {db_user}, Port: {config.database.port}")
-print(f"Cache Host: {config.cache.host}, Port: {cache_port}")
-```
-
-Validation, saving, loading, migration, and encryption all work recursively through these defined sections.
-
-### 9. Import/Export (Nested)
-
-*   **Exporting Current State:** `export_schema_with_values()` returns a dictionary where the `value` for a section key is itself a nested dictionary representing the values within that section.
-
-    ```python
-    # config is an initialized ConfigGuard instance with nested schema
-    current_state = config.export_schema_with_values()
-
-    # 'current_state["settings"]' structure example:
-    # {
-    #   "database": {
-    #     "schema": { ... database section schema ... },
-    #     "value": { # <-- Nested dictionary of values
-    #       "host": "localhost",
-    #       "port": 5433,
-    #       "credentials": { # <-- Deeper nesting of values
-    #         "user": "app_user",
-    #         "password": "secure_password"
-    #       }
-    #     }
-    #   },
-    #   "cache": {
-    #      "schema": { ... cache section schema ... },
-    #      "value": {
-    #          "host": "redis.internal",
-    #          "port": 6379
-    #      }
-    #   },
-    #   "global_timeout": { # Top-level setting
-    #       "schema": { ... },
-    #       "value": 60.0
-    #   }
-    # }
-
-    import json
-    # print(json.dumps(current_state, indent=2))
-    print(f"Exported DB host: {current_state['settings']['database']['value']['host']}")
-    ```
-
-*   **Importing Values from Dictionary:** `import_config()` accepts a nested dictionary matching the section structure. Validation and the `ignore_unknown` flag apply recursively.
-
-    ```python
-    update_data = {
-        "server": { # Assuming 'server' section exists in schema
-            "port": 8888,
-            "tls": { "enabled": True }
-        },
-        "logging": {
-            "level": "ERROR",
-            "unknown_log_setting": "abc" # Ignored if ignore_unknown=True
-        },
-        "global_timeout": 120.0,
-        "new_unknwon_section": {} # Ignored if ignore_unknown=True
-    }
-
-    try:
-        # Update config, ignore keys/sections not in schema, validation occurs
-        config.import_config(update_data, ignore_unknown=True)
-        print("Import successful.")
-        print(f"Port after import: {config.server.port}")
-        print(f"TLS after import: {config.server.tls.enabled}")
-    except SettingNotFoundError as e:
-         print(f"Import failed (ignore_unknown=False): {e}")
-    except Exception as e:
-        print(f"Import failed: {e}")
-    ```
 
 ---
 
 ## 💡 Use Cases
 
-*   **Reliable App Settings:** Manage server ports, paths, flags, logging levels, organized by component (server, database, logging).
-*   **Secure Secret Storage:** Encrypt API keys, DB credentials, tokens within dedicated sections (e.g., `credentials.database`, `credentials.service_x`).
-*   **UI Configuration:** Define and manage themes, layouts, user prefs, potentially grouped by UI area.
-*   **Complex Service Config:** Manage settings for microservices with distinct configurations for databases, caches, external APIs, etc.
-*   **Multi-Environment Configs:** Use separate, potentially encrypted files (dev, staging, prod) with the same nested schema.
-*   **Dynamic Config UIs:** Feed `export_schema_with_values()` to generate forms with sections and validation hints.
+*   **Robust Application Settings:** Define and manage essential parameters like server ports, file paths, feature flags, logging levels with guaranteed type safety and validation. Organize settings by application component (e.g., `server`, `database`, `ui`, `tasks`) using nested sections.
+*   **Secure Credential Storage:** Store sensitive data like API keys, database connection strings with passwords, OAuth tokens, or encryption keys within specific sections (e.g., `credentials.database`, `credentials.external_api`). Enable encryption (`encryption_key`) to protect this data at rest transparently.
+*   **User Preferences:** Manage user-specific application settings like themes, language choices, layout configurations, notification preferences. A standard section can enforce known preference keys, while a dynamic section could store UI state or less critical, user-defined preferences.
+*   **Microservice Configuration:** Each service can have its own `ConfigGuard` schema defining its unique requirements (database connections, message queue endpoints, cache settings, service discovery URLs). Shared settings could potentially be managed through includes or layering if needed (though not a built-in feature).
+*   **Multi-Environment Deployment:** Maintain consistency across development, staging, and production environments by using the same schema but different configuration files (`dev.yaml`, `staging.db`, `prod.toml`). Use encryption for production secrets. Versioning helps manage updates across environments.
+*   **Plugin and Extension Systems:** Use dynamic sections (`"schema": {}`) to allow plugins or extensions to store their own configuration data without requiring modifications to the core application schema. The core app can load/save the dynamic section content, while the plugin interprets its own keys/values.
+*   **Generating Configuration UIs:** Use the output of `export_schema_with_values()` to dynamically generate web forms or GUI elements for editing configurations. The schema provides field types, help text, options (for dropdowns), and validation rules (min/max) to build intelligent editors.
+*   **Complex Workflow/Pipeline Configuration:** Define parameters for multi-step processes, data pipelines, or scientific workflows, potentially using nested sections for different stages and dynamic sections for stage-specific parameters.
 
 ---
 
 ## 🔧 Advanced Topics
 
-*   **Custom Storage Handlers:** Need different storage? Subclass `configguard.handlers.StorageHandler`, implement `load`/`save` (including encryption handling and potentially custom nesting logic if not JSON-like), and register the extension in `configguard.handlers.HANDLER_MAP`.
+*   **Custom Storage Handlers:** Extend ConfigGuard's capabilities by creating your own storage backend.
+    1.  Subclass `configguard.handlers.StorageHandler`.
+    2.  Implement the abstract `load(self, filepath)` and `save(self, filepath, data, mode)` methods.
+        *   Your `load` must return a `LoadResult` dictionary (`{'version': Optional[str], 'schema': Optional[dict], 'values': dict}`).
+        *   Your `save` must handle the `data` payload (`{'instance_version', 'schema_definition', 'config_values'}`) and the `mode` ('values' or 'full').
+        *   If your handler should support encryption, use `self._encrypt(bytes)` and `self._decrypt(bytes)` internally, which leverage the Fernet instance passed during `__init__`.
+        *   Consider how your format represents nested structures and dynamic section content.
+    3.  Register your handler by adding its file extension(s) and class to the `configguard.handlers.HANDLER_MAP` dictionary, or provide an instance directly during `ConfigGuard` initialization using the `handler` argument.
+*   **(Potential Future) Custom Migration Functions:** For complex schema changes between versions (e.g., renaming keys, splitting sections, complex type transformations), a future enhancement could allow users to register custom Python functions to handle specific version-to-version migrations beyond the default key matching and default filling.
+*   **(Potential Future) Schema Includes/Composition:** For very large configurations, a mechanism to include or compose schemas from multiple files could be considered.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are highly welcome! We strive for clean, reliable, well-tested code.
+Contributions are highly welcome and appreciated! Help make ConfigGuard even better.
 
-1.  **Fork & Branch:** Fork the repo and create a new branch for your work.
-2.  **Code Quality:**
-    *   Adhere to **PEP 8**.
-    *   Format code using **Black**.
-    *   Use **Ruff** for linting (see `pyproject.toml` for config).
-    *   Add **Type Hints** (`typing`) to all functions/methods.
-    *   Write clear **Docstrings** (Google style preferred).
-3.  **Testing:** Add comprehensive **unit tests** using `pytest` in the `tests/` directory. Aim for high coverage, especially for new features or bug fixes.
-4.  **Local Checks:** Run `black .`, `ruff check .`, `mypy configguard`, and `pytest` before committing.
-5.  **Commit & PR:** Use descriptive commit messages. Open a Pull Request against the `main` branch. Ensure CI checks pass.
-
-*(A full CONTRIBUTING.md with detailed steps is planned).*
+1.  **Found a Bug or Have an Idea?** Check the [Issue Tracker](https://github.com/ParisNeo/ConfigGuard/issues) to see if it's already reported. If not, please open a new issue, providing as much detail as possible (code examples, error messages, expected vs. actual behavior).
+2.  **Ready to Contribute Code?**
+    *   **Fork the Repository:** Create your own fork on GitHub.
+    *   **Create a Branch:** Make a new branch in your fork for your changes (e.g., `feature/add-new-handler`, `bugfix/fix-validation-edge-case`).
+    *   **Develop:** Write your code, ensuring it adheres to the project's quality standards:
+        *   **Style:** Follow PEP 8 guidelines. Use **Black** for code formatting (`black .`).
+        *   **Linting:** Use **Ruff** for linting (`ruff check .`). Address reported issues.
+        *   **Typing:** Add **Type Hints** (`typing`) to all functions and methods. Check with **Mypy** (`mypy configguard`).
+        *   **Docstrings:** Write clear, informative docstrings (Google style preferred) for all public modules, classes, functions, and methods. Explain parameters, return values, raised exceptions, and usage.
+    *   **Testing:** Add **unit tests** using `pytest` in the `tests/` directory for any new features or bug fixes. Ensure existing tests pass. Aim for high test coverage (`pytest --cov=configguard`).
+    *   **Commit:** Write clear, concise commit messages explaining your changes.
+    *   **Push & Pull Request:** Push your branch to your fork and open a Pull Request against the `main` branch of the original `ParisNeo/ConfigGuard` repository. Describe your changes in the PR description and link any relevant issues.
+3.  **Code of Conduct:** Please note that this project is released with a Contributor Code of Conduct. By participating, you are expected to uphold this code. (A formal CODE_OF_CONDUCT.md file may be added later).
 
 ---
 
 ## 📜 License
 
-ConfigGuard is distributed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
+ConfigGuard is distributed under the terms of the **Apache License 2.0**.
+
+This means you are free to use, modify, and distribute the software for commercial or non-commercial purposes, but you must include the original copyright notice and license text. See the [LICENSE](LICENSE) file in the repository for the full license text.
 
 ---
 

@@ -5,9 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-05-01
+
+This version introduces the ability to explicitly set the instance version via the constructor.
+
+### Added
+
+*   **`instance_version` Parameter:** Added an optional `instance_version` parameter to the `ConfigGuard` constructor (`__init__`).
+    *   If provided, this string value sets the version for the `ConfigGuard` instance, taking precedence over the `__version__` key found within the loaded schema definition.
+    *   This allows using schemas without an embedded version or explicitly overriding the schema's version for testing or specific scenarios.
+    *   A warning is logged if `instance_version` is provided and differs from the `__version__` in the schema.
+    *   If neither `instance_version` nor a schema `__version__` key is found, the instance version defaults to `"0.0.0"`.
+*   **Version Validation:** The final determined instance version (whether from the parameter, schema, or default) is now validated using `packaging.version.parse` during initialization to ensure correctness.
+
+### Changed
+
+*   `ConfigGuard.__init__`: Modified initialization logic to prioritize the `instance_version` parameter for setting `self.version`.
+*   `README.md`: Updated documentation to include the new `instance_version` parameter in initialization examples and explanations.
+*   `examples/basic_usage.py`: Updated example to demonstrate using the `instance_version` parameter and the fallback behavior.
+*   `examples/Configgardgui.py`: Modified GUI example to optionally prompt the user for an instance version when opening a schema and pass it to the `ConfigGuard` constructor.
+
+## [0.4.2] - 2025-05-01
+
+This patch release addresses minor documentation updates and internal type hinting improvements related to the new handlers. No functional changes to core logic or handlers compared to 0.4.0.
+
+### Changed
+*   Minor internal type hint adjustments.
+*   Docstring improvements for handlers.
+
+## [0.4.0] - 2025-05-01
+
+This version adds support for TOML, YAML, and SQLite storage backends.
+
+### Added
+
+*   **`TomlHandler`:** Added a storage handler for TOML files (`.toml`). Requires the `toml` library (`pip install configguard[toml]`).
+*   **`YamlHandler`:** Added a storage handler for YAML files (`.yaml`, `.yml`). Requires the `PyYAML` library (`pip install configguard[yaml]`). Uses `yaml.safe_load` for security.
+*   **`SqliteHandler`:** Added a storage handler for SQLite database files (`.db`, `.sqlite`, `.sqlite3`). Uses the built-in `sqlite3` module. Stores configuration in a key-value table, flattening nested structures using dot notation keys and storing values as (potentially encrypted) JSON strings.
+*   **Handler Mapping:** Updated `configguard.handlers.HANDLER_MAP` and `get_handler` factory to recognize and instantiate the new handlers based on file extensions.
+*   **Optional Dependencies:** Added `[toml]` and `[yaml]` extras in `pyproject.toml` for installing required dependencies for the respective handlers. Updated `[all]` extra.
+
+### Changed
+
+*   `pyproject.toml`: Updated optional dependencies and `[all]` extra.
+*   `README.md`: Updated installation instructions and feature list to include new handlers.
+
+### Fixed
+
+*   Corrected the structure of the `value` field in `export_schema_with_values` for nested sections.
+*   Ensured `import_config` correctly raises `SettingNotFoundError` when `ignore_unknown=False` is used with unknown keys/sections in the input data.
+
 ## [0.3.0] - 2025-05-01
 
-This version introduces support for nested configuration sections, allowing for more structured and organized configuration schemas.
+This version introduced support for nested configuration sections, allowing for more structured and organized configuration schemas.
 
 ### Added
 
@@ -94,10 +144,3 @@ Initial functional release of ConfigGuard.
 *   Basic project structure (`pyproject.toml`, `.gitignore`).
 *   Example script (`examples/basic_usage.py`).
 *   Initial `README.md`.
-
-### Fixed
-*   Initial boolean coercion logic issues.
-*   Handler instantiation errors when loading schemas or encrypted files.
-*   Validation logic for `None` values with `nullable=True`.
-
----

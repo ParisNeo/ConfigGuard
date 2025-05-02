@@ -1,0 +1,20 @@
+general:
+  app_name: SampleApp
+  debug_mode: true
+  max_retries: 5
+ui_settings:
+  theme: dark
+  font_size: 12
+  recent_files:
+  - /path/to/document1.txt
+  - /path/to/image.png
+  window_positions:
+    main_window:
+      x: 100
+      y: 150
+      width: 800
+      height: 600
+    settings_dialog:
+      x: 200
+      y: 200
+api_key: abcdef1234567890 # Example key

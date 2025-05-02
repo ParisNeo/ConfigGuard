@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 # Project: ConfigGuard
 # File: configguard/__init__.py
 # Author: ParisNeo with Gemini 2.5
-# Date: 2025-05-01 (Updated for nesting)
+# Date: 2025-05-01 (Version bump for instance_version param)
 # Description: Initializes the ConfigGuard package, defining the public API.
 #              This file makes key classes, exceptions, and utility functions
 #              available directly under the 'configguard' namespace.
@@ -16,13 +17,13 @@ formats, encryption, versioning, nested sections, and schema definition.
 
 import typing
 
-# Define package version (incremented for nested section feature)
-__version__ = "0.3.0"
+# Define package version (incremented for instance_version param)
+__version__ = "0.5.0"
 
 # Import key components to expose them at the package level
 from .config import ConfigGuard
 from .exceptions import (
-    ConfigMasterError,
+    ConfigGuardError,
     EncryptionError,
     HandlerError,
     SchemaError,
@@ -69,9 +70,9 @@ __all__: typing.List[str] = [
     # Structure classes
     "SettingSchema",
     "ConfigSetting",
-    "ConfigSection",  # Add ConfigSection to the public API
+    "ConfigSection",
     # Base and specific exceptions
-    "ConfigMasterError",
+    "ConfigGuardError",
     "SchemaError",
     "ValidationError",
     "HandlerError",

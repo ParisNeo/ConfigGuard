@@ -1,0 +1,15 @@
+api_key = "fedcba0987654321" # Another example key
+
+[general]
+app_name = "TOML Editor"
+debug_mode = false
+max_retries = 2
+
+[ui_settings]
+theme = "system"
+font_size = ""
+recent_files = ["C:\\users\\docs\\report.toml", "D:\\data\\config.toml"]
+
+# Dynamic section with nested tables
+[ui_settings.window_positions]
+main_window = { x = 50, y = 50, width = 1024, height = 768 }

@@ -1,37 +1,37 @@
 # configguard/exceptions.py
 
 
-class ConfigMasterError(Exception):
+class ConfigGuardError(Exception):
     """Base exception for all ConfigGuard errors."""
 
     pass
 
 
-class SchemaError(ConfigMasterError):
+class SchemaError(ConfigGuardError):
     """Error related to schema definition or validation."""
 
     pass
 
 
-class ValidationError(ConfigMasterError):
+class ValidationError(ConfigGuardError):
     """Error raised when a value fails validation against the schema."""
 
     pass
 
 
-class HandlerError(ConfigMasterError):
+class HandlerError(ConfigGuardError):
     """Error related to loading or saving configuration using a handler."""
 
     pass
 
 
-class EncryptionError(ConfigMasterError):
+class EncryptionError(ConfigGuardError):
     """Error related to encryption or decryption."""
 
     pass
 
 
-class SettingNotFoundError(ConfigMasterError, KeyError):
+class SettingNotFoundError(ConfigGuardError, KeyError):
     """Error raised when trying to access a non-existent setting."""
 
     pass
